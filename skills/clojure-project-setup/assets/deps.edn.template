@@ -1,0 +1,18 @@
+;; Use latest versions:
+;; - Malli: https://github.com/metosin/malli/releases
+;; - tools.namespace: https://github.com/clojure/tools.namespace/releases
+{:paths ["src"]
+
+ :deps {}
+
+ :aliases
+ {:dev
+  {:extra-paths ["dev" "test"]
+   :extra-deps {metosin/malli {:mvn/version "LATEST"}
+                org.clojure/tools.namespace {:mvn/version "LATEST"}}}
+
+  :test
+  {:extra-paths ["test"]
+   :extra-deps {metosin/malli {:mvn/version "LATEST"}}
+   :main-opts ["-m" "cognitect.test-runner"]
+   :exec-fn cognitect.test-runner.api/test}}}

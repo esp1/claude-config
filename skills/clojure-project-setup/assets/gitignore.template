@@ -1,0 +1,30 @@
+# Clojure
+.cpcache/
+.nrepl-port
+.calva/
+.clj-kondo/
+.lsp/
+
+# Babashka
+.babashka/
+
+# Devbox
+.devbox/
+
+# Documentation (for library projects with codox)
+docs/api/
+
+# OS
+.DS_Store
+*.swp
+*~
+
+# Build artifacts
+target/
+classes/
+*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/

@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if code files (.clj, .cljs, .cljc, .py, .js, .ts, .go, .rs, .java, .rb, .ex, .exs) were modified using Edit or Write tools in this session. If yes, respond with JSON: {\"ok\": true, \"decision\": \"block\", \"reason\": \"Code files were modified. Consider running /doc-sync to keep documentation synchronized.\"}. If no code files were modified (only docs, configs, etc.), respond with: {\"ok\": true, \"decision\": \"continue\"}"
+          }
+        ]
+      }
+    ]
+  }
+}

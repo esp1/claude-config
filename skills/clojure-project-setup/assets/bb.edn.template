@@ -1,0 +1,11 @@
+{:min-bb-version "1.3.0"
+
+ :paths ["src"]
+
+ ;; Use latest Malli version: https://github.com/metosin/malli/releases
+ :deps {metosin/malli {:mvn/version "LATEST"}}
+
+ :tasks
+ {test
+  {:doc "Run tests with Clojure"
+   :task (clojure "-M:dev" "-m" "cognitect.test-runner")}}}
