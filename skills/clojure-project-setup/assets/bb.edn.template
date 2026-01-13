@@ -8,4 +8,9 @@
  :tasks
  {test
   {:doc "Run tests with Clojure"
-   :task (clojure "-M:dev" "-m" "cognitect.test-runner")}}}
+   :task (clojure "-M:dev" "-m" "cognitect.test-runner")}
+
+  ;; Use 'nrepl' not 'repl' to avoid overriding Babashka's built-in repl command
+  nrepl
+  {:doc "Start nREPL server"
+   :task (clojure "-M:dev" "-m" "nrepl.cmdline")}}}
