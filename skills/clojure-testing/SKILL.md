@@ -1,13 +1,13 @@
 ---
 name: clojure-testing
-description: This skill should be used when creating or modifying Clojure test files in the FSR project. It provides testing patterns, Malli schema integration, property-based testing workflows, and integration test best practices specific to this codebase.
+description: This skill should be used when creating or modifying Clojure test files. It provides testing patterns, Malli schema integration, property-based testing workflows, and integration test best practices.
 ---
 
-# Clojure Testing for FSR
+# Clojure Testing
 
 ## Overview
 
-This skill codifies the testing patterns used in the FSR (filesystem router) project, including Malli schema-driven testing, property-based tests, and integration test workflows.
+This skill codifies testing patterns for Clojure projects, including Malli schema-driven testing, property-based tests, and integration test workflows.
 
 ## When to Use This Skill
 
@@ -18,14 +18,9 @@ Use this skill when:
 - Writing property-based tests using Malli generators
 - Implementing test fixtures with Malli registry setup
 
-## Important Workflow Reminders
+## Test Types
 
-- **After making successful code changes** (including tests), invoke `/doc-sync` to keep documentation synchronized
-- **Before committing**, ensure `/doc-sync` has been run to update all affected documentation
-
-## Test Types in FSR
-
-FSR uses three complementary testing approaches:
+Clojure projects typically use three complementary testing approaches:
 
 ### 1. Unit Tests (Minimal)
 Simple function behavior tests with known inputs/outputs. Used sparingly—only when property-based tests would be overly complex.
@@ -39,29 +34,29 @@ Simple function behavior tests with known inputs/outputs. Used sparingly—only 
 ```
 
 ### 2. Property-Based Tests (Primary)
-Schema-driven generative tests that validate function properties across 100+ generated inputs. This is the **preferred** testing approach in FSR.
+Schema-driven generative tests that validate function properties across many generated inputs. This is the **preferred** testing approach.
 
 ```clojure
-(deftest clojure-file-ext-test
-  (testing "clojure-file-ext function"
-    (let [args-schema (-> #'clojure-file-ext meta :malli/schema second)
+(deftest my-function-test
+  (testing "my-function properties"
+    (let [args-schema (-> #'my-function meta :malli/schema second)
           args-gen (mg/generator args-schema)]
       (dotimes [_ 100]
-        (let [[filename] (gen/generate args-gen)
-              result (clojure-file-ext filename)]
-          (is (or (nil? result)
-                  (re-matches #"\.cljc?$" result))))))))
+        (let [[arg1 arg2] (gen/generate args-gen)
+              result (my-function arg1 arg2)]
+          ;; Test properties, not specific values
+          (is (or (nil? result) (string? result))))))))
 ```
 
 ### 3. Integration Tests
 End-to-end flows testing compilation, file I/O, and runtime behavior with proper cleanup.
 
 ```clojure
-(deftest test-full-compilation-flow
-  (testing "Compile routes from test directory"
-    (let [compiled (compile-dynamic-routes test-routes-dir)]
-      (is (map? compiled))
-      (is (contains? compiled :static-routes)))))
+(deftest test-full-flow
+  (testing "Complete processing flow"
+    (let [result (process-input test-input)]
+      (is (map? result))
+      (is (contains? result :expected-key)))))
 ```
 
 ## Malli Registry Setup Pattern
@@ -69,10 +64,10 @@ End-to-end flows testing compilation, file I/O, and runtime behavior with proper
 **CRITICAL:** All test namespaces that use Malli schemas MUST include this fixture pattern:
 
 ```clojure
-(ns esp1.fsr.your-test
+(ns my-app.core-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [esp1.fsr.schema :as fsr-schema]
+   [my-app.schema :as app-schema]
    [malli.core :as m]
    [malli.dev :as mdev]
    [malli.registry :as mr]))
@@ -85,16 +80,14 @@ End-to-end flows testing compilation, file I/O, and runtime behavior with proper
       (m/type-schemas)
       (m/sequence-schemas)
       (m/base-schemas)
-      (fsr-schema/file-schemas)
-      (fsr-schema/cache-schemas)
-      (fsr-schema/route-schemas)))
+      (app-schema/my-schemas)))  ;; Your project's schemas
     (mdev/start!)
     (f)
     (mdev/stop!)
     (mr/set-default-registry! m/default-registry)))
 ```
 
-**Important:** Include ONLY the schema registries needed for the test namespace. If testing cache functionality, include `cache-schemas`. If testing file operations, include `file-schemas`. This keeps the registry lean.
+**Important:** Include ONLY the schema registries needed for the test namespace. This keeps the registry lean.
 
 ## Property-Based Testing Workflow
 
@@ -106,7 +99,7 @@ End-to-end flows testing compilation, file I/O, and runtime behavior with proper
   ...)
 ```
 
-### Step 2: Generate 100 Test Cases
+### Step 2: Generate Test Cases
 
 ```clojure
 (dotimes [_ 100]
@@ -119,8 +112,8 @@ End-to-end flows testing compilation, file I/O, and runtime behavior with proper
 
 Focus on invariants and properties:
 - Type properties: "Result is always a string or nil"
-- Structural properties: "Result never contains dots"
-- Relationship properties: "Pattern captures match param count"
+- Structural properties: "Result never contains X"
+- Relationship properties: "Output length <= input length"
 
 ```clojure
 ;; Good: Tests properties
@@ -135,14 +128,11 @@ Focus on invariants and properties:
 When function schemas aren't sufficient, create custom generators:
 
 ```clojure
-(let [filename-gen (gen/one-of
-                    [gen/string-alphanumeric
-                     (gen/fmap #(str "prefix_<param>_" %)
-                               gen/string-alphanumeric)
-                     (gen/fmap #(str "<<multi-param>>_" %)
-                               gen/string-alphanumeric)])]
+(let [custom-gen (gen/one-of
+                   [gen/string-alphanumeric
+                    (gen/fmap #(str "prefix_" %) gen/string-alphanumeric)])]
   (dotimes [_ 100]
-    (let [filename (gen/generate filename-gen)]
+    (let [input (gen/generate custom-gen)]
       ...)))
 ```
 
@@ -153,7 +143,7 @@ When function schemas aren't sufficient, create custom generators:
 Always use fixtures for setup/cleanup:
 
 ```clojure
-(def temp-output-dir (str "/tmp/fsr-test-" (System/currentTimeMillis)))
+(def temp-output-dir (str "/tmp/test-" (System/currentTimeMillis)))
 
 (defn cleanup-fixture [f]
   "Clean up temp directory after tests"
@@ -167,35 +157,35 @@ Always use fixtures for setup/cleanup:
 (use-fixtures :once cleanup-fixture)
 ```
 
-### Compile-Write-Load-Test Flow
+### Setup-Process-Verify Flow
 
-Standard pattern for testing production compilation:
+Standard pattern for testing processing pipelines:
 
 ```clojure
-(testing "Write and load compiled routes"
-  (let [compiled (compile-dynamic-routes test-routes-dir)
-        output-file (str temp-output-dir "/compiled-routes.edn")]
+(testing "Process and verify output"
+  (let [input {:data "test"}
+        output-file (str temp-output-dir "/output.edn")]
 
-    ;; Write
-    (write-compiled-routes compiled output-file)
+    ;; Process
+    (process-and-write input output-file)
 
     ;; Verify file created
     (is (.exists (io/file output-file)))
 
     ;; Load and verify
-    (let [loaded (load-compiled-routes output-file)]
-      (is (= compiled loaded)))))
+    (let [loaded (read-output output-file)]
+      (is (= (:data input) (:data loaded))))))
 ```
 
-### Cache Testing Pattern
+### State/Cache Testing Pattern
 
-For cache tests, always clear cache before each test:
+For tests involving mutable state, always clear before each test:
 
 ```clojure
-(deftest cache-hit-scenario-test
-  (testing "first resolution (miss) then second resolution (hit)"
-    ;; Clear cache to start fresh
-    (cache/clear!)
+(deftest cache-scenario-test
+  (testing "cache behavior"
+    ;; Clear state to start fresh
+    (reset-state!)
 
     ;; Test logic...
     ))
@@ -208,29 +198,14 @@ For cache tests, always clear cache before each test:
 Include clear namespace-level documentation:
 
 ```clojure
-(ns esp1.fsr.integration-test
-  "End-to-end integration test for production route compilation.
+(ns my-app.integration-test
+  "End-to-end integration tests.
 
    Tests the complete flow:
-   1. Compile routes from filesystem
-   2. Write to EDN file
-   3. Load compiled routes
-   4. Match and invoke handlers via middleware"
+   1. Process input
+   2. Write output
+   3. Load and verify"
   (:require ...))
-```
-
-### Test ID Comments for Traceability
-
-Use comment-based test IDs to map tests to requirements:
-
-```clojure
-;; T006: Integration test for cache hit scenario
-(deftest cache-hit-scenario-test
-  ...)
-
-;; T007: Integration test for cache clearing
-(deftest cache-clearing-test
-  ...)
 ```
 
 ### Testing Blocks
@@ -238,12 +213,12 @@ Use comment-based test IDs to map tests to requirements:
 Use nested `testing` blocks for clarity:
 
 ```clojure
-(deftest lru-eviction-test
-  (testing "LRU eviction when cache exceeds max-entries"
+(deftest feature-test
+  (testing "happy path"
     ;; Test logic...
     )
 
-  (testing "LRU eviction updates access time"
+  (testing "edge cases"
     ;; Test logic...
     ))
 ```
@@ -251,14 +226,13 @@ Use nested `testing` blocks for clarity:
 ## Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (common patterns)
 bb test
+clojure -X:test
+lein test
 
 # Run specific test namespace
-clojure -M:dev -m clojure.test.runner esp1.fsr.core-test
-
-# Run with Malli instrumentation (dev mode)
-clojure -M:dev
+clojure -M:test -n my-app.core-test
 ```
 
 ## Checklist for New Tests
@@ -266,46 +240,36 @@ clojure -M:dev
 Before committing test code:
 
 - [ ] Use `testing` blocks with descriptive strings
-- [ ] Include test IDs in comments if mapping to requirements (T001, T002...)
 - [ ] Set up Malli registry fixture if using schemas
 - [ ] Prefer property-based tests over unit tests
-- [ ] Generate 100 samples for property-based tests
+- [ ] Generate 100+ samples for property-based tests
 - [ ] Test properties/invariants, not specific values
 - [ ] Clean up temp files/directories in integration tests
 - [ ] Include namespace docstring explaining test purpose
-- [ ] Clear cache before cache-related tests
-- [ ] Run `bb test` to verify all tests pass
+- [ ] Clear mutable state before state-dependent tests
+- [ ] Run full test suite to verify all tests pass
 
 ## Common Patterns Reference
 
 ### Testing Ring Handlers
 
 ```clojure
-(let [app (wrap-compiled-routes fallback {:compiled-routes compiled})]
-  (let [response (app {:uri "api/users" :request-method :post})]
-    (is (= 201 (:status response)))
-    (is (= "{\"id\":\"123\"}" (:body response)))))
+(let [app (create-handler)]
+  (let [response (app {:uri "/api/users" :request-method :get})]
+    (is (= 200 (:status response)))))
 ```
 
 ### Testing Path Parameter Extraction
 
 ```clojure
-(is (= [(io/file "test/bar/abc_<param1>_def_<<param2>>_xyz.clj")
-        {"param1" "word", "param2" "m/n/o/p"}]
-       (uri->file+params "abc-word-def-m/n/o/p-xyz" (io/file "test/bar"))))
+(is (= {:id "123" :action "edit"}
+       (extract-params "/users/123/edit" "/users/:id/:action")))
 ```
 
-### Testing Metrics
+### Testing with Assertions on Collections
 
 ```clojure
-(let [metrics (cache/get-metrics)]
-  (is (> (:hits metrics) 0) "Should have at least one cache hit")
-  (is (= 0 (:current-size metrics)) "Current size should be 0 after clear"))
-```
-
-### Testing Pattern Matching with Regex
-
-```clojure
-(let [invalidated-count (cache/invalidate! #"/api/.*")]
-  (is (= 3 invalidated-count) "Should invalidate 3 API routes"))
+(let [results (process-items items)]
+  (is (every? valid? results))
+  (is (= (count items) (count results))))
 ```

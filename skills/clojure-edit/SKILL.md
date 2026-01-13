@@ -9,6 +9,17 @@ description: This skill should be used when reading or editing Clojure, ClojureS
 
 Provide guidance for reading and editing Clojure code with attention to structural correctness, idiomatic patterns, and proper handling of s-expressions. This skill addresses the common challenge of maintaining balanced parentheses and syntactically correct code when making modifications.
 
+## Clojure LSP Integration
+
+The **clojure-lsp plugin** provides real-time diagnostics for Clojure files. Use `mcp__ide__getDiagnostics` to check for syntax errors, unresolved symbols, and other issues after editing.
+
+**Supported file types:** `.clj`, `.cljs`, `.cljc`, `.edn`, `.bb`, `.cljd`
+
+**Workflow:**
+1. Make edits using the patterns in this skill
+2. Call `mcp__ide__getDiagnostics` to verify no errors were introduced
+3. Fix any issues before proceeding
+
 ## When to Use This Skill
 
 Invoke this skill when:
