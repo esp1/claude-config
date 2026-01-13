@@ -1,9 +1,9 @@
 ---
-name: reflect
+name: learn
 description: Review conversation context, identify user corrections and guidance, and propose memory updates (CLAUDE.md, rules, skills, commands, agents, docs). Can create new files when appropriate. Always requires user approval before changes.
 ---
 
-# Reflect
+# Learn
 
 Review conversation to identify learnings that should persist. Propose targeted updates for user approval.
 
