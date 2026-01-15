@@ -83,11 +83,6 @@ mkdir -p my-router/test/acme/my_router
 
 **Note:** Use underscores in directory names for hyphens in the project name (e.g., `my-router` → `my_router/`)
 
-**For web applications:** Also ensure the routes directory exists:
-```bash
-mkdir -p my-router/routes
-```
-
 See `references/project-structure.md` for detailed directory layout conventions.
 
 ### Step 5: Configure deps.edn and bb.edn
@@ -286,10 +281,9 @@ Web applications using Ring and FSR require additional configuration and directo
 
 **Quick summary:**
 - Add Ring and FSR to `:deps`
-- Include `"routes"` in `:paths`
-- Create `routes/` directory for route handlers
+- Create routes under `src/<org>/<project>/routes/`
+- Use `wrap-fs-router "src/<org>/<project>/routes"` (filesystem path)
 - Add `:run` alias and `dev` task for server
-- Use `wrap-fs-router` for development with hot-reload
 
 ### Multi-Module Projects
 
