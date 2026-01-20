@@ -2,7 +2,7 @@
 name: clojure-malli-expert
 description: Use this agent for complex Malli schema tasks requiring multiple steps - schema design, debugging validation errors, setting up generative testing, or creating custom generators. For quick schema questions, the clojure-malli-schema skill is faster.
 tools: Glob, Grep, LS, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillBash
-model: sonnet
+model: opus
 color: cyan
 ---
 
