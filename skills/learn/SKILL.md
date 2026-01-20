@@ -1,6 +1,6 @@
 ---
 name: learn
-description: Review conversation context, identify user corrections and guidance, and propose memory updates (CLAUDE.md, rules, skills, commands, agents, docs). Can create new files when appropriate. Always requires user approval before changes.
+description: Review conversation context, identify user corrections and guidance, and propose memory updates (CLAUDE.md, rules, skills, agents, docs). Can create new files when appropriate. Always requires user approval before changes.
 ---
 
 # Learn
@@ -19,15 +19,12 @@ Review conversation to identify learnings that should persist. Propose targeted 
 | `./.claude/skills/*/SKILL.md` | Project | Project-specific workflows |
 | `~/.claude/agents/*.md` | Global | Personal specialized assistants |
 | `./.claude/agents/*.md` | Project | Project-specific assistants |
-| `~/.claude/commands/*.md` | Global | Personal slash commands |
-| `./.claude/commands/*.md` | Project | Project-specific commands |
 | `./docs/**/*.md` | Project | Architecture, decisions, patterns |
 
 ### When to Create vs Update
 
 **Create new file** when:
 - Skill: Multi-step workflow emerged or domain expertise shared
-- Command: Repeated action or user wants a shortcut
 - Rule: Guidance is file-pattern specific
 - Agent: Specialized assistant persona needed
 - Doc: Architecture/design decisions to preserve
@@ -87,9 +84,6 @@ Is this file-pattern specific? (e.g., "for .clj files...")
 Is this a multi-step workflow or domain expertise?
   → Yes → skills/*/SKILL.md (create new skill if none fits)
 
-Is this a repeated action the user wants quick access to?
-  → Yes → commands/*.md (create new command)
-
 Is this about a specialized assistant persona?
   → Yes → agents/*.md (create new agent)
 
@@ -118,11 +112,6 @@ Suggest creating a **new documentation file/category** when:
 Suggest creating a **new rule** when:
 - Guidance applies to specific file patterns
 - Different file types need different treatment
-
-Suggest creating a **new command** when:
-- Action is repeated frequently
-- User explicitly wants a shortcut
-- Complex operation benefits from encapsulation
 
 Suggest creating a **new agent** when:
 - Specialized expertise benefits from persona
@@ -202,23 +191,6 @@ Write memory content that is:
 **Location Rationale**: Searched for existing test config; none found. General project preference fits CLAUDE.md.
 **Content**:
 - Run tests with `bb test`
-```
-
-### New Command
-
-> User: "I keep asking you to check coverage - make that easier"
-
-```markdown
-## Proposed: Coverage Command
-**Source**: User wants quick coverage check
-**Target**: ~/.claude/commands/coverage.md
-**Change**: Create
-**Location Rationale**: Repeated action pattern. No existing coverage command. Creating new command provides quick access.
-**Content**:
----
-description: Run tests with coverage report
----
-Run test suite with coverage. Summarize percentages, highlight files below 80%.
 ```
 
 ### New Rule
