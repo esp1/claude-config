@@ -205,6 +205,7 @@ When proposing reorganization:
 **Target**: [File path]
 **Change**: Create | Add | Modify | Remove
 **Location Rationale**: [Why this is the best location - what was considered]
+**Duplication check**: [Confirmed no overlap with: list of checked locations]
 **Content**:
 [Proposed content - clear, concise, actionable]
 ```
@@ -231,6 +232,15 @@ Write memory content that is:
 - **Actionable**: "Run tests before committing" not "testing is important"
 - **Concise**: No filler, no redundancy
 - **Imperative**: "Run X" not "You should run X"
+- **Non-duplicative**: Don't restate what source code, directory structure, or other docs already provide
+
+### Source of Truth Checks
+
+Before proposing documentation, verify:
+- Does this information already exist in a reference file, skill, or source code?
+- Could a reader discover this with `ls`, `grep`, or by reading the referenced file?
+- If updating a skill, does another skill already own this knowledge?
+- Would removing this text lose any information that isn't available elsewhere?
 
 ## Examples
 

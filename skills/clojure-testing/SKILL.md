@@ -61,31 +61,7 @@ End-to-end flows testing compilation, file I/O, and runtime behavior with proper
 
 ## Malli Registry Setup Pattern
 
-**CRITICAL:** All test namespaces that use Malli schemas MUST include this fixture pattern:
-
-```clojure
-(ns my-app.core-test
-  (:require
-   [clojure.test :refer [deftest is testing use-fixtures]]
-   [my-app.schema :as app-schema]
-   [malli.core :as m]
-   [malli.dev :as mdev]
-   [malli.registry :as mr]))
-
-(use-fixtures :once
-  (fn [f]
-    (mr/set-default-registry!
-     (merge
-      (m/comparator-schemas)
-      (m/type-schemas)
-      (m/sequence-schemas)
-      (m/base-schemas)
-      (app-schema/my-schemas)))  ;; Your project's schemas
-    (mdev/start!)
-    (f)
-    (mdev/stop!)
-    (mr/set-default-registry! m/default-registry)))
-```
+**CRITICAL:** All test namespaces that use Malli schemas MUST include a registry setup fixture. The **clojure-malli-schema** skill is the canonical source for the fixture pattern, registry configuration, and best practices for Malli in tests. Consult it when setting up or modifying Malli test fixtures.
 
 **Important:** Include ONLY the schema registries needed for the test namespace. This keeps the registry lean.
 

@@ -245,45 +245,19 @@ git commit -m "Initial project setup
 
 For detailed information on directory layout, file conventions, and Malli schema organization, see `references/project-structure.md`.
 
-**Quick reference:**
-- `src/` - Production code, minimal dependencies
-- `test/` - Test files mirroring src/ structure
-- `deps.edn` - Dependency and alias configuration
-- `bb.edn` - Babashka task definitions
-
 ## Common Patterns
 
 ### Library Projects
 
 Libraries require additional configuration for API documentation generation and should maintain zero or minimal production dependencies.
 
-**For library-specific setup**, see `references/library-setup.md` which covers:
-- Codox configuration for API documentation
-- Zero-dependency principles
-- Library-specific checklist
-
-**Quick summary:**
-- Add `:codox` alias to `deps.edn`
-- Add `codox` task to `bb.edn`
-- Keep `:deps` empty or minimal
-- Run `bb codox` to generate docs in `docs/api/`
+See `references/library-setup.md` for Codox configuration, zero-dependency principles, and the library-specific checklist.
 
 ### Web Application Projects
 
 Web applications using Ring and FSR require additional configuration and directory structure.
 
-**For web application setup**, see `references/web-app-setup.md` which covers:
-- Ring and FSR dependency configuration
-- Routes directory structure
-- Development server setup with hot-reload
-- Production deployment with static generation
-- Middleware configuration
-
-**Quick summary:**
-- Add Ring and FSR to `:deps`
-- Create routes under `src/<org>/<project>/routes/`
-- Use `wrap-fs-router "src/<org>/<project>/routes"` (filesystem path)
-- Add `:run` alias and `dev` task for server
+See `references/web-app-setup.md` for Ring/FSR dependency configuration, routes directory structure, development server setup, and middleware configuration.
 
 ### Multi-Module Projects
 
@@ -299,19 +273,6 @@ my-project/
 │   └── deps.edn
 └── deps.edn (root)
 ```
-
-## Resources
-
-### assets/
-- `deps.edn.template` - Template deps.edn with standard aliases
-- `bb.edn.template` - Template bb.edn with common tasks
-- `gitignore.template` - Standard .gitignore for Clojure projects
-
-### references/
-- `devbox-setup.md` - Devbox and direnv setup for project tools
-- `project-structure.md` - Directory layout conventions, file naming, and Malli schema organization
-- `library-setup.md` - Additional configuration for library projects (Codox, zero-dependency principles)
-- `web-app-setup.md` - Additional configuration for web applications (Ring, FSR, routes directory, server setup)
 
 ## Quick Start Checklist
 

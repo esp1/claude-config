@@ -63,7 +63,7 @@ Documentation and reference material intended to be loaded as needed into contex
 - **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides
 - **Benefits**: Keeps SKILL.md lean, loaded only when Claude determines it's needed
 - **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md
-- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skill—this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
+- **No duplication**: Information lives in one place. SKILL.md explains *when and why* to consult a reference — not its contents.
 
 ##### Assets (`assets/`)
 
@@ -171,6 +171,14 @@ To complete SKILL.md, answer the following questions:
 1. What is the purpose of the skill, in a few sentences?
 2. When should the skill be used?
 3. In practice, how should Claude use the skill? All reusable skill contents developed above should be referenced so that Claude knows how to use them.
+
+#### Documentation Principles
+
+- Document intent and patterns, not implementation — explain *why* and *when*, not *what* the code does
+- One source of truth — every piece of information lives in exactly one place
+- Don't enumerate what can be discovered — omit directory listings, file inventories, and anything an `ls` or `grep` would reveal
+- References hold detail; SKILL.md holds workflow — SKILL.md describes the procedure and when to consult a reference, not the reference's contents
+- Cross-skill deduplication — shared knowledge lives in one canonical skill; other skills point to it
 
 ### Step 5: Packaging a Skill
 

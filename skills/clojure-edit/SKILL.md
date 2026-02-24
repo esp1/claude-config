@@ -1,6 +1,12 @@
 ---
 name: clojure-edit
 description: This skill should be used when reading or editing Clojure, ClojureScript, or CLJC files. It provides best practices for structural editing that preserves syntactic correctness, handles parentheses properly, and follows Clojure idioms. Use this skill when working with .clj, .cljs, or .cljc files to ensure code quality and prevent syntax errors.
+hooks:
+  PostToolUse:
+    - matcher: "Edit"
+      hooks:
+        - type: command
+          command: "~/.claude/skills/clojure-edit/scripts/validate_clojure_syntax.clj"
 ---
 
 # Clojure Edit
@@ -300,54 +306,7 @@ When editing the script itself, exercise extra care:
 
 ## Clojure Best Practices
 
-### Conditionals
-
-- Use `if` for single conditions
-- Use `cond` for multiple branches
-- Use `if-let` and `when-let` to bind and test simultaneously
-- Use `when` for single-result conditionals without else
-- Consider `cond->` and `cond->>` for threading with conditions
-
-### Variable Binding
-
-- Avoid unnecessary `let` bindings
-- Inline single-use values
-- Bind variables only when reused or for clarity
-- Use threading macros (`->`, `->>`) to eliminate intermediate bindings
-
-### Destructuring
-
-Use destructuring in function parameters for clarity:
-
-```clojure
-;; For namespaced keywords
-(defn handler [{:keys [::namespaced-key ::other] :as ctx}]
-  ...)
-
-;; For regular keywords
-(defn handler [{:keys [regular-key other] :as ctx}]
-  ...)
-```
-
-### Control Flow
-
-- Track actual values instead of boolean flags
-- Use early returns with `when` to reduce nesting
-- Return `nil` for "not found" rather than flag-bearing objects
-
-### Function Design
-
-- Each function should serve a single purpose
-- Prioritize pure functions over side-effect-based implementations
-- Return meaningful values for downstream use
-- Keep functions small and focused
-
-### Library Usage
-
-- Prefer `clojure.string` over Java interop
-  - Use `str/blank?` instead of `.isEmpty`
-- Follow naming conventions: predicates end with `?`
-- Use idiomatic built-in functions
+For idiomatic Clojure patterns (conditionals, destructuring, control flow, function design, library usage), see `references/clojure_best_practices.md`. Consult it when writing new functions or reviewing code for idiom compliance.
 
 ## Parenthesis Management
 
