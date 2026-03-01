@@ -26,7 +26,7 @@ Invoke this skill when:
 ## Why Schemas Matter
 
 - **Validation**: Catch errors early with runtime validation (in dev/test)
-- **Documentation**: Schemas serve as executable, always-up-to-date documentation
+- **Documentation**: Schemas serve as executable, always-up-to-date documentation — they reduce the need for type descriptions in docstrings (see **clojure-edit** skill's documentation practices)
 - **Generative Testing**: Enable property-based testing with generated test data
 - **Zero Runtime Cost**: Schemas are metadata - no production dependency on Malli
 - **Better Error Messages**: Clear validation errors show exactly what's wrong

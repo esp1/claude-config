@@ -179,6 +179,7 @@ To complete SKILL.md, answer the following questions:
 - Don't enumerate what can be discovered — omit directory listings, file inventories, and anything an `ls` or `grep` would reveal
 - References hold detail; SKILL.md holds workflow — SKILL.md describes the procedure and when to consult a reference, not the reference's contents
 - Cross-skill deduplication — shared knowledge lives in one canonical skill; other skills point to it
+- Procedural instructions hierarchy — prefer the most deterministic form: executable scripts > checklists/decision trees > prose descriptions. Automate what can be automated; use checklists for procedures requiring judgment; use prose only for context and rationale
 
 ### Step 5: Packaging a Skill
 
