@@ -107,6 +107,17 @@ Expand to a directory with index.md when content grows complex:
    - Propagate changes up and down the documentation hierarchy
    - Update summaries in parent docs, but don't duplicate detailed content
 
+6. **Source Code is Primary Documentation**
+   - Well-named functions, parameters, and data structures are the first layer of documentation
+   - Comments explain intent, not what the code does
+   - External documentation describes *what* the system does and *why*, not *how* individual functions work
+   - For code-level documentation conventions, consult language-specific editing skills where available
+
+7. **Procedural Instructions Hierarchy**
+   - When documenting procedures, prefer the most deterministic form available
+   - Executable scripts/commands > checklists/decision trees > prose descriptions
+   - See the **skill-creator** skill's Documentation Principles for the canonical definition
+
 ## Anti-Duplication Workflow
 
 **Before adding ANY documentation content, follow this critical checklist:**
