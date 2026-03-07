@@ -72,7 +72,7 @@ fi
 short_dir=$(echo "$rel_dir" | awk -F/ '{if(NF>2) print "…/"$(NF-1)"/"$NF; else print $0}')
 
 format_statusline() {
-  printf '📁\033[36m%s\033[0m%s  🧠\033[35m%s\033[0m  \033[%sm%s%%\033[0m' "$short_dir" "$branch" "$model" "$color" "$pct"
+  printf '📁\033[36m%s\033[0m%s 🧠\033[35m%s\033[0m \033[%sm%s%%\033[0m' "$short_dir" "$branch" "$model" "$color" "$pct"
 }
 
 format_statusline
