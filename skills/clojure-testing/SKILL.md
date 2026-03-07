@@ -1,29 +1,16 @@
 ---
 name: clojure-testing
-description: This skill should be used when creating or modifying Clojure test files. It provides testing patterns, Malli schema integration, property-based testing workflows, and integration test best practices.
+description: ALWAYS use when writing, modifying, or reviewing Clojure test code (deftest, clojure.test). Covers property-based testing with Malli generators and test.check, integration test patterns with cleanup, and test organization conventions. Also applies when running tests (bb test, lein test, clojure -X:test) or debugging test failures.
 ---
 
 # Clojure Testing
-
-## Overview
-
-This skill codifies testing patterns for Clojure projects, including Malli schema-driven testing, property-based tests, and integration test workflows.
-
-## When to Use This Skill
-
-Use this skill when:
-- Creating new test files (`.clj` files in `test/` directory)
-- Adding tests to existing test namespaces
-- Setting up integration tests with temp directories
-- Writing property-based tests using Malli generators
-- Implementing test fixtures with Malli registry setup
 
 ## Test Types
 
 Clojure projects typically use three complementary testing approaches:
 
 ### 1. Unit Tests (Minimal)
-Simple function behavior tests with known inputs/outputs. Used sparingly—only when property-based tests would be overly complex.
+Simple function behavior tests with known inputs/outputs. Used sparingly — only when property-based tests would be overly complex.
 
 ```clojure
 (deftest test-classify-route
@@ -34,7 +21,28 @@ Simple function behavior tests with known inputs/outputs. Used sparingly—only 
 ```
 
 ### 2. Property-Based Tests (Primary)
-Schema-driven generative tests that validate function properties across many generated inputs. This is the **preferred** testing approach.
+Schema-driven generative tests that validate function properties across many generated inputs. This is the **preferred** testing approach because it catches edge cases that hand-written tests miss.
+
+#### Using test.check (Recommended)
+
+```clojure
+(require '[clojure.test.check.clojure-test :refer [defspec]]
+         '[clojure.test.check.generators :as gen]
+         '[clojure.test.check.properties :as prop])
+
+(defspec my-function-roundtrip 100
+  (prop/for-all [x gen/int
+                 y gen/int]
+    (let [result (my-function x y)]
+      ;; Test properties, not specific values
+      (or (nil? result) (int? result)))))
+```
+
+`defspec` provides shrinking (finds minimal failing case), seed reporting (reproducible failures), and proper test integration.
+
+#### Using Malli Generators (Lightweight Alternative)
+
+When you want to generate from Malli schemas directly:
 
 ```clojure
 (deftest my-function-test
@@ -116,10 +124,14 @@ When function schemas aren't sufficient, create custom generators:
 
 ### Temp Directory Management
 
-Always use fixtures for setup/cleanup:
+Use `java.nio.file.Files/createTempDirectory` for thread-safe temp dirs in parallel test runs:
 
 ```clojure
-(def temp-output-dir (str "/tmp/test-" (System/currentTimeMillis)))
+(import '[java.nio.file Files]
+        '[java.nio.file.attribute FileAttribute])
+
+(def temp-output-dir
+  (str (Files/createTempDirectory "test-" (into-array FileAttribute []))))
 
 (defn cleanup-fixture [f]
   "Clean up temp directory after tests"
@@ -167,6 +179,14 @@ For tests involving mutable state, always clear before each test:
     ))
 ```
 
+## Failure Modes and Troubleshooting
+
+- **Generator fails with complex schemas** — Simplify the schema or provide a custom generator. Deeply nested schemas with many constraints can be unsatisfiable.
+- **Reproducing property test failures** — When using `defspec`, the failure output includes the seed. Re-run with `(defspec ... {:seed <seed>})` to reproduce.
+- **Flaky property tests** — Usually caused by side effects or shared state. Ensure tests are pure or properly isolated.
+- **"Schema not found" in test fixtures** — Verify the registry function includes the schema and `(mdev/start!)` is called after registry setup.
+- **Tests pass individually but fail together** — State leaking between tests. Add `(reset-state!)` in fixtures or use `:each` fixtures.
+
 ## Test Organization and Documentation
 
 ### Namespace Docstrings
@@ -202,7 +222,7 @@ Use nested `testing` blocks for clarity:
 ## Running Tests
 
 ```bash
-# Run all tests (common patterns)
+# For devbox projects, prefix with: devbox run --
 bb test
 clojure -X:test
 lein test
@@ -225,27 +245,4 @@ Before committing test code:
 - [ ] Clear mutable state before state-dependent tests
 - [ ] Run full test suite to verify all tests pass
 
-## Common Patterns Reference
-
-### Testing Ring Handlers
-
-```clojure
-(let [app (create-handler)]
-  (let [response (app {:uri "/api/users" :request-method :get})]
-    (is (= 200 (:status response)))))
-```
-
-### Testing Path Parameter Extraction
-
-```clojure
-(is (= {:id "123" :action "edit"}
-       (extract-params "/users/123/edit" "/users/:id/:action")))
-```
-
-### Testing with Assertions on Collections
-
-```clojure
-(let [results (process-items items)]
-  (is (every? valid? results))
-  (is (= (count items) (count results))))
-```
+For a complete annotated example showing all patterns together, see `references/test-template.clj`.

@@ -1,41 +1,23 @@
 ---
 name: clojure-malli-schema
-description: Provides comprehensive guidance for adding Malli schemas to Clojure projects. Use this skill when creating or modifying Clojure functions to ensure proper schema coverage with best practices. Ensures schemas are self-documenting, enable validation and generative testing, while remaining dev-only dependencies.
+description: ALWAYS use when writing or modifying Clojure functions or data structures. Defines how to add Malli schemas as :malli/schema metadata, enforces :catn over :cat for self-documenting parameter names, and covers schema registries, test fixtures with dev-mode instrumentation, and common schema patterns. Triggers on new functions, function signature changes, data structure definitions, Malli setup, schema validation issues.
 ---
 
 # Malli Schema
 
-## Overview
-
-Comprehensive guidance for adding Malli schemas to Clojure projects. This skill ensures:
-- All public functions have schemas
-- Schemas are self-documenting using `:catn`
-- Data structures are properly validated
-- Malli remains a dev-only dependency (schemas as metadata)
-
-## When to Use This Skill
-
-Invoke this skill when:
-- Creating new Clojure functions (add schemas immediately)
-- Modifying existing functions (update schemas)
-- Defining new data structures
-- Setting up Malli in a new project
-- Reviewing code for missing schemas
-- Creating test registries
-
 ## Why Schemas Matter
 
 - **Validation**: Catch errors early with runtime validation (in dev/test)
-- **Documentation**: Schemas serve as executable, always-up-to-date documentation — they reduce the need for type descriptions in docstrings (see **clojure-edit** skill's documentation practices)
+- **Documentation**: Schemas serve as executable, always-up-to-date documentation — they reduce the need for type descriptions in docstrings
 - **Generative Testing**: Enable property-based testing with generated test data
-- **Zero Runtime Cost**: Schemas are metadata - no production dependency on Malli
+- **Zero Runtime Cost**: Store schemas as metadata — no production dependency on Malli
 - **Better Error Messages**: Clear validation errors show exactly what's wrong
 
 ## Schema Organization
 
 ### Function Schemas
 - Add as `:malli/schema` metadata on the function itself
-- Keeps Malli as dev-only dependency (no runtime impact)
+- Keep Malli as dev-only dependency (no runtime impact)
 - Metadata travels with the function definition
 
 ### Data Structure Schemas
@@ -58,7 +40,7 @@ test/
 
 ### Critical Rule: Always Use `:catn`
 
-**ALWAYS use `:catn` (not `:cat`) for function parameters** to provide descriptive names. This makes schemas self-documenting.
+**ALWAYS use `:catn` (not `:cat`) for function parameters** to provide descriptive names. This makes schemas self-documenting — `:cat` leaves parameters unnamed, producing unclear error messages and unreadable schemas.
 
 ### Template
 
@@ -76,7 +58,7 @@ test/
 
 ### Why `:catn` vs `:cat`
 
-❌ **Bad - Using `:cat`:**
+Bad — Using `:cat`:
 ```clojure
 {:malli/schema [:=> [:cat :string :string] :string]}
 ```
@@ -84,7 +66,7 @@ test/
 - No self-documentation
 - Harder to debug validation errors
 
-✅ **Good - Using `:catn`:**
+Good — Using `:catn`:
 ```clojure
 {:malli/schema [:=> [:catn
                      [:uri :string]
@@ -94,7 +76,6 @@ test/
 - Immediately clear what each parameter represents
 - Self-documenting
 - Better error messages
-- Easier to understand at a glance
 
 ### Examples
 
@@ -238,60 +219,6 @@ In your test file, register schemas in fixtures:
     (mr/set-default-registry! m/default-registry)))
 ```
 
-## Common Schema Patterns
-
-### Map with Specific Keys
-
-```clojure
-[:map
- [:required-key :string]
- [:optional-key {:optional true} :int]
- [:namespaced-key {:optional true} :keyword]
- [:with-constraints [:int {:min 0 :max 100}]]]
-```
-
-### Union Types (One of Several)
-
-```clojure
-[:or :string :int :keyword]
-```
-
-### Maybe/Optional
-
-```clojure
-[:maybe :string]  ;; Can be string or nil
-```
-
-### Collections
-
-```clojure
-[:vector :int]                    ;; Vector of integers
-[:set :keyword]                   ;; Set of keywords
-[:sequential :string]             ;; Any sequential of strings
-[:map-of :string :int]            ;; Map with string keys, int values
-```
-
-### Custom Validation
-
-```clojure
-[:string {:min 3 :max 50}]        ;; String length constraints
-[:int {:min 0 :max 100}]          ;; Number range
-[:fn #(< 0 % 100)]                ;; Custom predicate
-[:re #"^[A-Z][a-z]+$"]            ;; Regex validation
-```
-
-### Nested Structures
-
-```clojure
-[:map
- [:user [:map
-         [:id :int]
-         [:name :string]]]
- [:metadata [:map
-             [:created-at :int]
-             [:updated-at :int]]]]
-```
-
 ## Schema Checklist for New Code
 
 When adding or modifying code, ensure:
@@ -308,122 +235,36 @@ When adding or modifying code, ensure:
 
 Before committing code:
 
-1. **Run tests** - Ensures all schemas compile and validate
+1. **Run tests** — schemas are validated automatically when dev-mode is active
    ```bash
-   # Project-specific test command (e.g., lein test, clj -X:test, bb test)
+   # For devbox projects: devbox run -- bb test
    ```
 
-2. **Check Malli dev-mode output** - Look for:
+2. **Check Malli dev-mode output** — look for:
    - "instrumented N function vars" message
    - No schema-related errors or warnings
    - All expected functions instrumented
 
-3. **Verify schema errors are helpful** - If validation fails:
+3. **Verify schema errors are helpful** — if validation fails:
    - Error message should clearly indicate which parameter failed
    - Should show expected vs actual types
    - `:catn` names should appear in error messages
-
-## Complete Example Workflow
-
-### Step 1: Define Data Structure Schema
-
-In `src/my_app/schema.clj`:
-
-```clojure
-(ns my-app.schema)
-
-(def request-context?
-  "Schema for request context"
-  [:map
-   [:uri :string]
-   [:method [:enum :get :post :put :delete]]
-   [:params {:optional true} [:map-of :string :string]]])
-
-(defn request-schemas []
-  {:request-context request-context?})
-```
-
-### Step 2: Add Function with Schema
-
-In `src/my_app/core.clj`:
-
-```clojure
-(ns my-app.core)
-
-(defn process-request
-  "Processes incoming HTTP request context"
-  {:malli/schema [:=> [:catn [:ctx :request-context]]
-                  :map]}
-  [ctx]
-  {:status 200
-   :body (str "Processed " (:uri ctx))})
-```
-
-### Step 3: Register in Tests
-
-In `test/my_app/core_test.clj`:
-
-```clojure
-(ns my-app.core-test
-  (:require [clojure.test :refer [deftest is use-fixtures]]
-            [my-app.schema :as app-schema]
-            [malli.core :as m]
-            [malli.dev :as mdev]
-            [malli.registry :as mr]))
-
-(use-fixtures :once
-  (fn [f]
-    (mr/set-default-registry!
-     (merge
-      (m/comparator-schemas)
-      (m/type-schemas)
-      (m/sequence-schemas)
-      (m/base-schemas)
-      (app-schema/request-schemas)))
-    (mdev/start!)
-    (f)
-    (mdev/stop!)
-    (mr/set-default-registry! m/default-registry)))
-
-(deftest process-request-test
-  (is (= 200 (:status (process-request {:uri "/test" :method :get})))))
-```
-
-### Step 4: Run Tests
-
-```bash
-# Schemas are validated automatically when dev-mode is active
-# You'll see: "malli: instrumented N function vars"
-```
 
 ## Project Setup
 
 ### Initial Malli Setup
 
-If starting a new project, add Malli as a dev dependency:
+Add Malli as a dev dependency (use the latest stable version from [Malli releases](https://github.com/metosin/malli/releases)):
 
 **deps.edn:**
 ```clojure
 {:deps {}
  :aliases
- {:dev {:extra-deps {metosin/malli {:mvn/version "0.16.0"}}}
-  :test {:extra-deps {metosin/malli {:mvn/version "0.16.0"}}}}}
-```
-
-**project.clj (Leiningen):**
-```clojure
-(defproject my-app "0.1.0"
-  :dependencies []
-  :profiles {:dev {:dependencies [[metosin/malli "0.16.0"]]}})
+ {:dev {:extra-deps {metosin/malli {:mvn/version "LATEST"}}}
+  :test {:extra-deps {metosin/malli {:mvn/version "LATEST"}}}}}
 ```
 
 ### Create Schema Namespace
-
-```bash
-# Create schema namespace
-mkdir -p src/my_app
-touch src/my_app/schema.clj
-```
 
 ```clojure
 (ns my-app.schema
@@ -439,36 +280,36 @@ touch src/my_app/schema.clj
 
 ## Best Practices
 
-1. **Add schemas as you write code** - Don't retrofit later
-2. **Use `:catn` always** - Even for single-arg functions
-3. **Keep schemas close to data** - Define in schema namespace, use in code
-4. **Descriptive parameter names** - `[:uri :string]` not `[:s :string]`
-5. **Custom types over primitives** - Create `:user-id` type instead of using `:int` everywhere
-6. **Test schema validation** - Write tests that intentionally violate schemas
-7. **Update schemas with code changes** - Keep them in sync
-8. **Use dev-mode in tests** - Catches schema violations early
+1. **Add schemas as you write code** — don't retrofit later
+2. **Use `:catn` always** — even for single-arg functions
+3. **Keep schemas close to data** — define in schema namespace, use in code
+4. **Use descriptive parameter names** — `[:uri :string]` not `[:s :string]`
+5. **Prefer custom types over primitives** — create `:user-id` type instead of using `:int` everywhere
+6. **Test schema validation** — write tests that intentionally violate schemas
+7. **Update schemas with code changes** — keep them in sync
+8. **Use dev-mode in tests** — catches schema violations early
 
 ## Common Pitfalls to Avoid
 
-❌ **Using `:cat` instead of `:catn`**
+Using `:cat` instead of `:catn`:
 ```clojure
 {:malli/schema [:=> [:cat :string :int] :string]}  ;; Bad!
 ```
 
-❌ **Forgetting to register custom schemas**
+Forgetting to register custom schemas:
 ```clojure
 ;; Defined :user-id in schema.clj but forgot to add to registry
 {:malli/schema [:=> [:catn [:id :user-id]] :map]}  ;; Will fail!
 ```
 
-❌ **Missing metadata key**
+Missing metadata key:
 ```clojure
 (defn foo [x]
   [:=> [:catn [:x :int]] :int]  ;; Wrong! Not in metadata
   (+ x 1))
 ```
 
-❌ **Not using dev-mode in tests**
+Not using dev-mode in tests:
 ```clojure
 ;; Missing (mdev/start!) in test fixture
 ;; Schemas defined but never validated!
@@ -495,34 +336,4 @@ touch src/my_app/schema.clj
 - Add `:title` or `:description` to schemas for clarity
 - Use specific custom types instead of generic primitives
 
-## Quick Reference Card
-
-```clojure
-;; Function schema template
-(defn my-fn
-  "Docstring"
-  {:malli/schema [:=> [:catn [:param :type]] :return-type]}
-  [param]
-  body)
-
-;; Data structure
-(def my-data? [:map [:key :type]])
-
-;; Registry
-(defn my-schemas [] {:my-data my-data?})
-
-;; Test fixture
-(use-fixtures :once
-  (fn [f]
-    (mr/set-default-registry! (merge ...schemas...))
-    (mdev/start!)
-    (f)
-    (mdev/stop!)
-    (mr/set-default-registry! m/default-registry)))
-```
-
-## Further Reading
-
-- [Malli Documentation](https://github.com/metosin/malli)
-- [Function Schemas Guide](https://github.com/metosin/malli#function-schemas)
-- [Malli Dev Mode](https://github.com/metosin/malli#development-mode)
+For common schema patterns and a quick reference card, read `references/malli-patterns.md`.

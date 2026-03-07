@@ -1,29 +1,19 @@
 ---
 name: clojure-repl
-description: This skill should be used when developing, testing, or debugging Clojure code using REPL-driven development. It provides a workflow for iterative development with immediate feedback, emphasizing small incremental steps, testing in the REPL before committing to files, and maintaining high code quality through continuous validation. Use when actively working on Clojure features or debugging issues.
+description: Use this skill whenever you need to evaluate Clojure expressions in a REPL — for iterative development, debugging, API exploration, or validating code before saving to files. Covers nREPL connection, incremental prototyping workflow, and REPL-based testing. Prefer this skill over writing untested Clojure code directly to files. Also invoke when the user asks to "try something in the REPL," "test this function," or "debug this interactively."
 ---
 
 # Clojure REPL
 
-## Overview
+Guide REPL-driven development workflow for Clojure projects. The foundational approach is "tiny steps with high quality rich feedback" — rapid iteration with immediate validation before committing code to files.
 
-Guide REPL-driven development workflow for Clojure projects. This skill emphasizes "tiny steps with high quality rich feedback" as the foundational approach, enabling rapid iteration with immediate validation before committing code to files.
-
-## When to Use This Skill
-
-Invoke this skill when:
-- Developing new Clojure features or functions
-- Debugging Clojure code
-- Testing ideas or exploring APIs
-- Refactoring existing code
-- Learning about unfamiliar codebases
-- Prototyping solutions before implementation
+**Devbox note:** For projects using devbox, prefix all shell commands with `devbox run --` (e.g., `devbox run -- clojure -M:dev`, `devbox run -- bb nrepl`).
 
 ## Connecting to a Running nREPL
 
-For projects with a running development server or REPL, connect to the existing nREPL session rather than starting a new one. This allows testing code in the actual runtime environment with live application state.
+Connect to an existing nREPL session rather than starting a new one when a development server is already running. This allows testing code in the actual runtime environment with live application state.
 
-### Finding a Running nREPL
+### Finding and Connecting to nREPL
 
 Check for a `.nrepl-port` file in the project directory:
 
@@ -33,40 +23,48 @@ cat .nrepl-port
 # => 54321 (the port number)
 ```
 
-If the file exists, an nREPL server is running on that port. Use this port to connect and evaluate code.
+If the file exists, send expressions to the running nREPL:
+
+```bash
+# Using Babashka as nREPL client
+echo '(+ 1 2)' | bb nrepl-client localhost:$(cat .nrepl-port)
+
+# Or evaluate a file
+bb nrepl-client localhost:$(cat .nrepl-port) --file src/my/namespace.clj
+```
+
+### Detecting Stale `.nrepl-port`
+
+If `.nrepl-port` exists but connection fails, the REPL process likely died without cleanup:
+
+```bash
+# Test if the port is actually open
+nc -z localhost $(cat .nrepl-port) 2>/dev/null && echo "REPL running" || echo "Stale port file"
+
+# If stale, clean up and start fresh
+rm .nrepl-port
+```
 
 ### Starting an nREPL Server
 
-If no `.nrepl-port` file exists, start an nREPL server using one of these methods (in priority order):
+If no `.nrepl-port` file exists:
 
 **1. Check for Babashka tasks** (`bb.edn`)
 
 ```bash
-# List available tasks
 bb tasks
-
 # Common REPL task names: repl, nrepl, dev
-bb repl
-# or
 bb nrepl
-# or
-bb dev  # May include nREPL server
 ```
 
 **2. Check for Clojure aliases** (`deps.edn`)
 
 ```bash
-# Look at deps.edn aliases section
 # Common REPL aliases: :repl, :nrepl, :dev
-
-clojure -M:repl
-# or
 clojure -M:dev
 ```
 
 **3. Start a basic nREPL server**
-
-If no project-specific configuration exists:
 
 ```bash
 # Babashka nREPL
@@ -78,37 +76,28 @@ clojure -Sdeps '{:deps {nrepl/nrepl {:mvn/version "1.1.0"}}}' -M -m nrepl.cmdlin
 
 After starting, the `.nrepl-port` file will be created containing the port number.
 
-### When to Connect vs. Start Fresh REPL
+### When to Connect vs. Start Fresh
 
 **Connect to running nREPL when:**
-- A development server is already running (`bb dev`, etc.)
+- A development server is already running
 - Testing code against live application state
 - Debugging runtime issues in the actual environment
-- Hot-reloading code changes into running app
 
 **Start fresh REPL when:**
 - No development server is running
 - Working on standalone functions or utilities
 - Prototyping new features in isolation
-- The application doesn't need to be running
 
 ## Core Philosophy: Incremental Verification
 
-**Small steps beat big leaps.** The REPL excels at providing immediate feedback on small, focused code snippets. Use this to your advantage by:
+**Small steps beat big leaps.** The REPL excels at providing immediate feedback on small, focused code snippets:
 
 1. **Test before committing** - Validate code in REPL first
 2. **Build incrementally** - Add one piece at a time
 3. **Verify continuously** - Check each step works before proceeding
 4. **Save only what works** - Move validated code to files
 
-### Why This Works
-
-Current LLMs are excellent at using the Clojure REPL because:
-- Immediate feedback catches errors quickly
-- Small iterations reduce complexity
-- Syntax errors are found instantly
-- Logic can be verified step-by-step
-- **The form and maintainability of ephemeral code DOES NOT MATTER** - only the final saved code needs to be clean
+**The form and maintainability of ephemeral code DOES NOT MATTER** — only the final saved code needs to be clean.
 
 ## REPL-Driven Development Workflow
 
@@ -171,12 +160,7 @@ Test each expression before advancing:
 
 ### Phase 4: File Integration
 
-Save working solutions to source files:
-
-```clojure
-;; Once validated in REPL, save to file
-;; Use clojure-edit skill to add to appropriate namespace
-```
+Save working solutions to source files using the clojure-edit skill.
 
 ### Phase 5: Verification
 
@@ -200,7 +184,7 @@ For namespace management, code exploration, data inspection, and other REPL comm
 
 ### Using the inspect_namespace Script
 
-This skill includes a Babashka script for quickly exploring namespace contents without loading them in the REPL. The script requires `bb` (Babashka) to be installed globally on your system:
+This skill includes a Babashka script for quickly exploring namespace contents without loading them in the REPL:
 
 ```bash
 # Inspect a namespace file, showing all public functions
@@ -215,20 +199,6 @@ scripts/inspect_namespace.clj src/my/namespace.clj --names-only
 # Show summary statistics
 scripts/inspect_namespace.clj src/my/namespace.clj --summary
 ```
-
-**Output includes:**
-- Namespace name and docstring
-- Function names, types (defn, defn-, def, defmethod)
-- Function signatures (argument vectors)
-- Docstrings
-- Line numbers
-- Public/private visibility
-
-**Use cases:**
-- Quickly understand what functions are available before loading in REPL
-- Find specific functions by scanning output
-- Document namespace API surface
-- Plan REPL exploration strategy
 
 ## Workflow Decision Tree
 
@@ -299,29 +269,6 @@ Starting new feature or debugging?
 (test-var #'my.namespace-test/my-test-name)
 ```
 
-### Interactive Test Development
-
-```clojure
-;; 1. Write test in REPL
-(deftest user-validation-test
-  (testing "valid user"
-    (is (valid-user? {:name "Alice" :email "alice@example.com"})))
-  (testing "invalid user"
-    (is (not (valid-user? {:name "Bob"})))))
-
-;; 2. Run test
-(test-var #'user-validation-test)
-
-;; 3. Fix failures
-(defn valid-user? [user]
-  (and (:name user) (:email user)))
-
-;; 4. Rerun test
-(test-var #'user-validation-test)
-
-;; 5. Save test to file when passing
-```
-
 ## Running Tests via CLI
 
 ```bash
@@ -330,11 +277,8 @@ clojure -X:test
 
 # Run specific namespace
 clojure -X:test :namespace 'my.namespace.test'
-
-# Run with options
-clojure -M:dev -m clojure.test.runner
 ```
 
 ## Reference Materials
 
-For REPL commands, development patterns (data-first, bottom-up, exploratory, debugging), session flow examples, and advanced techniques, see `references/repl_workflows.md`.
+For REPL commands, development patterns, debugging techniques, and session patterns, see `references/repl_workflows.md`.

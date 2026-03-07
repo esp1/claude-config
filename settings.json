@@ -11,6 +11,7 @@
     "clojure-lsp@clojure-lsp-marketplace": true,
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true
+    "commit-commands@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true
   }
 }

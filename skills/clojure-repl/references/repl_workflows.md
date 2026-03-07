@@ -2,82 +2,7 @@
 
 Extended reference for REPL-driven development patterns and techniques.
 
-## Multi-Step Task Management
-
-When working on complex tasks that span multiple steps, maintain focus and context by:
-
-1. **Tracking progress** - Keep notes of what's working
-2. **Storing intermediate results** - Save data between steps
-3. **Building incrementally** - Don't try to solve everything at once
-
-### Example: Multi-Step Data Pipeline
-
-```clojure
-;; Step 1: Load and explore data
-(def raw-data (slurp "data.csv"))
-(take 100 raw-data) ;; Preview
-
-;; Step 2: Parse first line to understand structure
-(first (clojure.string/split-lines raw-data))
-;; => "name,age,email"
-
-;; Step 3: Build parser for one line
-(defn parse-line [line]
-  (let [[name age email] (clojure.string/split line #",")]
-    {:name name :age (Integer/parseInt age) :email email}))
-
-(parse-line "Alice,30,alice@example.com")
-;; => {:name "Alice", :age 30, :email "alice@example.com"}
-
-;; Step 4: Parse all lines
-(def parsed-data
-  (->> (clojure.string/split-lines raw-data)
-       rest ;; Skip header
-       (map parse-line)))
-
-;; Step 5: Validate
-(count parsed-data)
-(take 3 parsed-data)
-
-;; Step 6: Filter or transform
-(def adults
-  (filter #(>= (:age %) 18) parsed-data))
-
-;; Step 7: Save working code to files
-```
-
-## Dealing with State and Side Effects
-
-### Pattern: Separate Pure and Impure
-
-```clojure
-;; Pure - easy to test in REPL
-(defn calculate-discount [total customer-type]
-  (case customer-type
-    :premium (* total 0.9)
-    :regular (* total 0.95)
-    total))
-
-(calculate-discount 100 :premium)
-;; => 90.0
-
-;; Impure - test carefully
-(defn apply-discount [order-id customer-type]
-  (let [order (db/get-order order-id)
-        total (:total order)
-        discounted (calculate-discount total customer-type)]
-    (db/update-order order-id {:total discounted})
-    discounted))
-
-;; Test pure function easily
-(map #(calculate-discount 100 %) [:premium :regular :guest])
-;; => (90.0 95.0 100)
-
-;; Test impure function with test data
-;; (requires test database or mocking)
-```
-
-### Pattern: Use Atoms for Stateful REPL Sessions
+## Pattern: Use Atoms for Stateful REPL Sessions
 
 ```clojure
 ;; Track state during development
@@ -105,59 +30,6 @@ When working on complex tasks that span multiple steps, maintain focus and conte
 ;; => {:attempts 2, :results [...], :errors [...]}
 ```
 
-## Working with External Resources
-
-### Pattern: Safe Resource Testing
-
-```clojure
-;; Test file operations safely
-(defn safe-write-test [content]
-  (let [test-file "/tmp/test-output.txt"]
-    (try
-      (spit test-file content)
-      (let [read-back (slurp test-file)]
-        {:success (= content read-back)
-         :written content
-         :read read-back})
-      (finally
-        (.delete (clojure.java.io/file test-file))))))
-
-(safe-write-test "Hello, World!")
-;; => {:success true, :written "Hello, World!", :read "Hello, World!"}
-```
-
-### Pattern: HTTP Request Testing
-
-```clojure
-;; Test HTTP client behavior
-(require '[clj-http.client :as http])
-
-;; Start with safe endpoint
-(def test-response
-  (http/get "https://httpbin.org/get"
-            {:as :json}))
-
-;; Explore response structure
-(keys test-response)
-;; => (:status :headers :body ...)
-
-(:status test-response)
-;; => 200
-
-;; Build actual client
-(defn fetch-user [user-id]
-  (-> (http/get (str "https://api.example.com/users/" user-id)
-                {:as :json})
-      :body))
-
-;; Test error handling
-(try
-  (fetch-user 99999)
-  (catch Exception e
-    {:error :not-found
-     :message (.getMessage e)}))
-```
-
 ## Advanced REPL Techniques
 
 ### Hot Code Reloading
@@ -174,50 +46,6 @@ When working on complex tasks that span multiple steps, maintain focus and conte
 (require '[clojure.tools.namespace.repl :refer [clear]])
 (clear)
 (refresh)
-```
-
-### Dynamic Function Redefinition
-
-```clojure
-;; Original version
-(defn process [x]
-  (* x 2))
-
-(process 5)
-;; => 10
-
-;; Redefine while testing
-(defn process [x]
-  (+ x 10))
-
-(process 5)
-;; => 15
-
-;; Test different implementations quickly
-```
-
-### Spec-Driven Development
-
-```clojure
-(require '[clojure.spec.alpha :as s])
-
-;; Define spec in REPL
-(s/def ::name string?)
-(s/def ::age pos-int?)
-(s/def ::email string?)
-(s/def ::user (s/keys :req [::name ::age ::email]))
-
-;; Validate data
-(s/valid? ::user {::name "Alice" ::age 30 ::email "alice@example.com"})
-;; => true
-
-(s/explain ::user {::name "Alice" ::age -5 ::email "alice@example.com"})
-;; Explains why age -5 is invalid
-
-;; Generate test data
-(require '[clojure.spec.gen.alpha :as gen])
-(gen/sample (s/gen ::user) 3)
-;; => [{::name "..." ::age 1 ::email "..."} ...]
 ```
 
 ## Debugging Techniques
@@ -279,7 +107,7 @@ When working on complex tasks that span multiple steps, maintain focus and conte
      (map :email))
 ;; => ("ALICE@EXAMPLE.COM" nil)
 
-;; Step 3
+;; Step 3 - add filtering
 (->> test-users
      (filter :active)
      (map :email)
@@ -310,8 +138,6 @@ When working on complex tasks that span multiple steps, maintain focus and conte
 ;; Benchmark
 (crit/quick-bench (slow-version (range 1000)))
 (crit/quick-bench (fast-version (range 1000)))
-
-;; Compare results
 ```
 
 ## REPL Session Patterns
@@ -333,15 +159,11 @@ Use the REPL like a notebook for exploratory data analysis:
 (def ages (map :age data))
 (/ (reduce + ages) (count ages)) ;; Mean age
 (apply max ages) ;; Max age
-(apply min ages) ;; Min age
 
 ;; Group and analyze
 (def by-country (group-by :country data))
 (keys by-country)
 (count (by-country "USA"))
-
-;; Visualize (if using a visualization library)
-;; (chart/bar-chart (frequencies (map :country data)))
 
 ;; Save interesting findings as functions
 (defn age-statistics [data]
@@ -349,39 +171,6 @@ Use the REPL like a notebook for exploratory data analysis:
     {:mean (/ (reduce + ages) (count ages))
      :max (apply max ages)
      :min (apply min ages)}))
-```
-
-### The Laboratory Pattern
-
-Test hypotheses about code behavior:
-
-```clojure
-;; Hypothesis: map is lazy, mapv is eager
-
-;; Test 1: Side effects with map
-(map println (range 5))
-;; => (nil nil nil nil nil)
-;; (Nothing printed!)
-
-;; Test 2: Force realization
-(doall (map println (range 5)))
-;; 0
-;; 1
-;; 2
-;; 3
-;; 4
-;; => (nil nil nil nil nil)
-
-;; Test 3: mapv is eager
-(mapv println (range 5))
-;; 0
-;; 1
-;; 2
-;; 3
-;; 4
-;; => [nil nil nil nil nil]
-
-;; Conclusion: Hypothesis confirmed!
 ```
 
 ### The Workshop Pattern
@@ -422,66 +211,6 @@ Build components iteratively:
 
 ;; All components work! Save to files.
 ```
-
-## Integration with Other Tools
-
-### Using REPL with Git
-
-```clojure
-;; Load clojure.java.shell for git commands
-(require '[clojure.java.shell :as shell])
-
-;; Check git status before committing
-(shell/sh "git" "status")
-
-;; Review changes
-(shell/sh "git" "diff")
-
-;; After validating code in REPL, commit
-(shell/sh "git" "add" "src/my/namespace.clj")
-(shell/sh "git" "commit" "-m" "Add new feature")
-```
-
-### Using REPL with Linters
-
-```clojure
-;; Run clj-kondo on current namespace
-(shell/sh "clj-kondo" "--lint" "src/my/namespace.clj")
-
-;; Check entire project
-(shell/sh "clj-kondo" "--lint" "src")
-```
-
-## Best Practices Summary
-
-### When Starting a REPL Session
-
-1. Load required namespaces
-2. Define test data
-3. Set up any necessary atoms or refs
-4. Configure logging or tap> if needed
-
-### During Development
-
-1. Test each expression before moving on
-2. Save interesting intermediate results
-3. Use meaningful names even for temporary defs
-4. Comment out or delete failed experiments
-
-### Before Saving to Files
-
-1. Clean up temporary code
-2. Organize functions logically
-3. Remove debug println statements
-4. Verify all tests pass
-5. Reload namespace to ensure no REPL-only state
-
-### When Ending a Session
-
-1. Save all working code to files
-2. Commit changes to version control
-3. Document any discoveries or gotchas
-4. Clear REPL state if needed: `(clear)` and `(refresh)`
 
 ## Common Pitfalls and Solutions
 

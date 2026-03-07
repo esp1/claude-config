@@ -1,6 +1,6 @@
 ---
 name: clojure-edit
-description: This skill should be used when reading or editing Clojure, ClojureScript, or CLJC files. It provides best practices for structural editing that preserves syntactic correctness, handles parentheses properly, and follows Clojure idioms. Use this skill when working with .clj, .cljs, or .cljc files to ensure code quality and prevent syntax errors.
+description: ALWAYS use this skill when reading or editing Clojure, ClojureScript, CLJC, EDN, Babashka (.bb), or ClojureDart (.cljd) files. Clojure code is structurally sensitive — unbalanced parentheses, brackets, or braces produce broken files. This skill provides form-aware editing scripts, automatic syntax validation via a PostToolUse hook, and structural editing patterns that prevent the most common class of errors. Trigger for any operation on .clj, .cljs, .cljc, .edn, .bb, or .cljd files.
 hooks:
   PostToolUse:
     - matcher: "Edit"
@@ -11,9 +11,7 @@ hooks:
 
 # Clojure Edit
 
-## Overview
-
-Provide guidance for reading and editing Clojure code with attention to structural correctness, idiomatic patterns, and proper handling of s-expressions. This skill addresses the common challenge of maintaining balanced parentheses and syntactically correct code when making modifications.
+Guidance for reading and editing Clojure code with attention to structural correctness, idiomatic patterns, and proper handling of s-expressions.
 
 ## Clojure LSP Integration
 
@@ -26,19 +24,7 @@ The **clojure-lsp plugin** provides real-time diagnostics for Clojure files. Use
 2. Call `mcp__ide__getDiagnostics` to verify no errors were introduced
 3. Fix any issues before proceeding
 
-## When to Use This Skill
-
-Invoke this skill when:
-- Reading `.clj`, `.cljs`, or `.cljc` files
-- Editing Clojure code (functions, forms, expressions)
-- Refactoring Clojure code while preserving correctness
-- Adding new code to existing Clojure files
-- Need to follow Clojure best practices and idioms
-
-## Important Workflow Reminders
-
-- **After making successful code changes**, invoke `/doc-sync` to keep documentation synchronized
-- **Before committing**, ensure `/doc-sync` has been run to update all affected documentation
+**Devbox note:** For projects using devbox, prefix Babashka commands with `devbox run --` (e.g., `devbox run -- bb scripts/...`).
 
 ## Reading Clojure Files
 
@@ -173,7 +159,6 @@ EOF
 - Use `$(cat <<'EOF' ... EOF)` - heredoc wrapped in command substitution
 - Single quotes around `'EOF'` prevent variable expansion inside the heredoc
 - No temp files needed - everything is inline and self-contained
-- Cleaner and more atomic than writing to temp files
 
 **Alternative: Temp files** (if heredocs don't work in your shell)
 ```bash
@@ -186,8 +171,6 @@ scripts/edit_clojure_form.clj --file src/my/file.clj \
   --operation replace \
   --new-form "$(cat /tmp/my-form.clj)"
 ```
-
-Both approaches avoid issues with newlines, quotes, and special characters in command-line arguments.
 
 #### Handling Function Names with Special Characters
 
@@ -209,7 +192,7 @@ scripts/edit_clojure_form.clj --file src/my/file.clj \
 
 #### Preview Changes with Dry Run
 
-Always preview complex edits before applying them. The `--dry-run` flag prints the result without writing to the file:
+Always preview complex edits before applying them:
 
 ```bash
 scripts/edit_clojure_form.clj --file src/my/file.clj \
@@ -219,58 +202,17 @@ scripts/edit_clojure_form.clj --file src/my/file.clj \
   --dry-run | head -50
 ```
 
-Use dry-run especially when:
-- Editing critical functions
-- Making large changes
-- Unsure if the edit will work correctly
-- Editing the script itself (self-editing)
-
 #### Understanding Error Messages
 
-The script provides detailed error messages to stderr:
-
-- **"Form not found: `<name>`"** - The target form doesn't exist, or the name is misspelled. Check that the function/form exists and the name matches exactly.
-
-- **"Exception during edit: `<details>`"** - A parsing or manipulation error occurred. The message includes a stack trace showing where the error happened. Common causes:
-  - Unbalanced parentheses in `--new-form`
-  - Invalid Clojure syntax in the new form
-  - File path issues
-
-- **Location information** - Shows the file and line number where the error occurred, helpful for debugging.
-
-When debugging errors, run the command without `2>&1` redirection to see the full error output with proper formatting.
-
-#### Working Directory Considerations
-
-The script resolves file paths relative to your current working directory:
-
-```bash
-# From project root
-~/.claude/skills/clojure-edit/scripts/edit_clojure_form.clj \
-  --file src/my/file.clj --name foo --operation replace --new-form "..."
-
-# From a subdirectory - adjust the path accordingly
-cd src && ~/.claude/skills/clojure-edit/scripts/edit_clojure_form.clj \
-  --file my/file.clj --name foo --operation replace --new-form "..."
-```
-
-Stay in a consistent directory (usually project root) to avoid path confusion.
+- **"Form not found: `<name>`"** - The target form doesn't exist, or the name is misspelled.
+- **"Exception during edit: `<details>`"** - A parsing or manipulation error. Common causes: unbalanced parentheses, invalid syntax, file path issues.
 
 #### Self-Editing Precautions
 
-When editing the script itself, exercise extra care:
-
-1. Always use `--dry-run` first to verify the edit
+When editing the script itself:
+1. Always use `--dry-run` first
 2. Keep a backup or rely on git to restore if needed
 3. Test the script immediately after editing
-4. Syntax errors will break the tool until fixed
-
-**Benefits:**
-- Targets forms by name, not text patterns (more reliable)
-- Preserves surrounding code structure
-- Operations: replace, insert-before, insert-after
-- Syntax validation via rewrite-clj
-- Dry-run mode for safety
 
 ### Common Editing Patterns
 
@@ -306,7 +248,9 @@ When editing the script itself, exercise extra care:
 
 ## Clojure Best Practices
 
-For idiomatic Clojure patterns (conditionals, destructuring, control flow, function design, library usage), see `references/clojure_best_practices.md`. Consult it when writing new functions or reviewing code for idiom compliance.
+For idiomatic Clojure patterns (conditionals, destructuring, control flow, function design, library usage), see `references/clojure_best_practices.md`.
+
+For documentation practices (docstrings, Codox setup, cross-cutting concerns), see `references/documentation-practices.md`.
 
 ## Parenthesis Management
 
@@ -319,32 +263,20 @@ For idiomatic Clojure patterns (conditionals, destructuring, control flow, funct
 
 ### Common Paren Errors to Avoid
 
-❌ **Missing closing paren:**
 ```clojure
+;; Missing closing paren:
 (defn foo [x]
   (+ x 1)  ;; Missing closing paren for defn!
-```
 
-✅ **Correct:**
-```clojure
+;; Correct:
 (defn foo [x]
   (+ x 1))  ;; All parens balanced
-```
 
-❌ **Extra closing paren:**
-```clojure
-(defn foo [x]
-  (+ x 1)))  ;; Extra closing paren!
-```
-
-❌ **Mismatched brackets:**
-```clojure
+;; Mismatched brackets:
 (defn foo [x}  ;; [ paired with }
   (+ x 1))
-```
 
-✅ **Correct:**
-```clojure
+;; Correct:
 (defn foo [x]  ;; [ paired with ]
   (+ x 1))
 ```
@@ -382,62 +314,7 @@ Need to modify Clojure file?
       (Be careful with common names!)
 ```
 
-## Integration with REPL Workflow
-
-When working with REPL-driven development:
-1. Prototype code in REPL first (see clojure-repl skill)
-2. Once code works in REPL, use this skill to save to files
-3. Use Read to verify the saved code
-4. Reload namespace in REPL to confirm integration
-
-## Documentation Practices
-
-### Source Code Documentation is the Single Source of Truth
-
-- Prefer self-documenting code — use descriptive names for functions, parameters, and bindings so the code communicates intent without comments
-- Reserve docstrings and comments for intent not obvious from the code — explain *why* a design choice was made, not *what* the code does
-- Include usage examples and edge cases in docstrings when the function's contract is non-obvious
-- Use markdown formatting in documentation strings (supported by Codox with `:metadata {:doc/format :markdown}`)
-- Technical markdown docs should link to generated API docs, not duplicate content
-- **Malli schemas are authoritative for types** - don't duplicate parameter/return type info in documentation strings; the `:malli/schema` metadata is the source of truth for function signatures
-
-### Linking to Codox API Docs
-
-When referencing functions in markdown documentation, link to the Codox-generated API docs:
-
-```markdown
-See [wrap-fs-router](../api/esp1.fsr.ring.html#var-wrap-fs-router) for details.
-```
-
-Codox anchor format: `namespace.html#var-function-name`
-- Hyphens in function names stay as hyphens
-- Special characters are URL-encoded (e.g., `->` becomes `.3E`, `!` becomes `.21`)
-
-### Codox Setup
-
-Configure Codox to output API docs to `docs/api/`:
-
-```clojure
-;; deps.edn
-:codox {:extra-deps {codox/codox {:mvn/version "0.10.8"}}
-        :exec-fn codox.main/generate-docs
-        :exec-args {:source-paths ["src"]
-                    :output-path "docs/api"
-                    :metadata {:doc/format :markdown}
-                    :source-uri "https://github.com/org/project/blob/{version}/{filepath}#L{line}"}}
-```
-
-**Important**: Commit `docs/api/` to version control for GitHub Pages publishing. Do NOT add it to `.gitignore`.
-
-Run `bb codox` (or `clojure -X:codox`) to regenerate after updating source documentation.
-
-### Cross-Cutting Concerns Belong in External Docs
-
-When a concept influences many disparate parts of the codebase, capture it as an external document (in `docs/`) rather than comments scattered across individual functions. Examples: architectural decisions, naming conventions, error handling strategies, security policies. Individual functions should reference the external doc, not re-explain the concept.
-
-For project-level documentation structure and placement, consult the **doc-sync** skill.
-
 ## Reference Materials
 
-For detailed Clojure coding standards and additional patterns, see:
 - `references/clojure_best_practices.md` - Comprehensive coding guidelines
+- `references/documentation-practices.md` - Docstrings, Codox, and documentation conventions

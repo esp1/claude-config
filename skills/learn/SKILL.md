@@ -1,6 +1,6 @@
 ---
 name: learn
-description: Review conversation context, identify user corrections and guidance, and propose memory updates (CLAUDE.md, rules, skills, agents, docs). Can create new files when appropriate. Always requires user approval before changes.
+description: When the user asks to learn, remember, or save a preference — or after a conversation where the user gave corrections or guidance worth preserving — review the conversation to identify learnings and propose memory updates (CLAUDE.md, rules, skills, agents, docs). Can create new files or reorganize existing ones. Always requires user approval before changes.
 ---
 
 # Learn
@@ -46,12 +46,18 @@ Look for:
 - Workflows developed or refined
 - Domain knowledge shared
 
+If no learnings are found, inform the user and stop. Do not invent learnings.
+
 ### 2. Categorize
 
 For each learning:
 - **Scope**: Global (all projects) vs Project-specific
 - **Type**: Preference, convention, knowledge, or process
 - **Confidence**: Explicit (high), inferred (medium), pattern (low - verify)
+
+For low-confidence (pattern-based) learnings, present them as questions rather than proposals: "I noticed you tend to X — would you like me to save this as a preference?"
+
+When scope is ambiguous (global vs project), default to project-level and note the ambiguity in the proposal. Let the user decide to promote to global.
 
 ### 3. Determine Best Location
 
@@ -117,60 +123,7 @@ Suggest creating a **new agent** when:
 - Specialized expertise benefits from persona
 - Multi-turn interaction pattern with specific knowledge
 
-#### Skill & Agent Frontmatter
-
-When creating or updating skills/agents, consider these frontmatter options to make behavior more deterministic and appropriate:
-
-**Model Selection** (`model`):
-- `haiku` - Fast, simple tasks (formatting, lookups, straightforward edits)
-- `sonnet` - Balanced tasks (most workflows, code generation)
-- `opus` - Complex reasoning (architecture decisions, debugging, schema design)
-
-**Hooks** (`hooks`) - Add deterministic validation:
-```yaml
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "test -f .nrepl-port"  # Verify precondition
-```
-Use hooks when:
-- A binary pass/fail precondition exists (file exists, command available)
-- Skill cannot proceed meaningfully without the precondition
-- Validation is deterministic, not judgment-based
-
-**Tool Restrictions** (`allowed-tools`):
-- Restrict to specific tools for safety or focus
-- Example: `allowed-tools: Read, Grep, Glob` for read-only skills
-
-**Arguments** (`$ARGUMENTS`):
-- Use `$ARGUMENTS` in skill content to accept user input
-- Document expected arguments in the skill description
-
-**Forked Context** (`context: fork`):
-- Run skill in isolated sub-agent context
-- Combine with `agent` to specify agent type
-
-**Visibility** (`user-invocable`):
-- Set `false` for skills triggered only programmatically
-- Default is `true` (appears in slash command menu)
-
-**Example skill with frontmatter:**
-```yaml
----
-name: validate-schema
-description: Validate Malli schemas in Clojure files
-model: haiku
-allowed-tools: Read, Grep, Glob, Bash
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "test -f deps.edn"
----
-```
+For frontmatter options when creating new skills or agents, read `references/frontmatter-guide.md`.
 
 ### 4. Consider Reorganization
 
@@ -242,79 +195,4 @@ Before proposing documentation, verify:
 - If updating a skill, does another skill already own this knowledge?
 - Would removing this text lose any information that isn't available elsewhere?
 
-## Examples
-
-### Simple Preference
-
-> User: "No, use `bb test` not `clojure -M:test`"
-
-```markdown
-## Proposed: Test Command
-**Source**: User corrected test command
-**Target**: ./.claude/CLAUDE.md
-**Change**: Add
-**Location Rationale**: Searched for existing test config; none found. General project preference fits CLAUDE.md.
-**Content**:
-- Run tests with `bb test`
-```
-
-### New Rule
-
-> User repeatedly: "In this project, exported functions need explicit return types"
-
-```markdown
-## Proposed: TypeScript Rule
-**Source**: Repeated corrections on return types
-**Target**: ./.claude/rules/typescript.md
-**Change**: Create
-**Location Rationale**: File-pattern specific guidance (.ts/.tsx). No existing TypeScript rule. Creating new rule scopes guidance appropriately.
-**Content**:
----
-globs: ["*.ts", "*.tsx"]
----
-- Exported functions require explicit return types
-```
-
-### New Skill from Emerged Workflow
-
-> User over multiple turns: Explained detailed process for debugging memory leaks
-
-```markdown
-## Proposed: Memory Debugging Skill
-**Source**: Multi-step debugging workflow shared across conversation
-**Target**: ~/.claude/skills/memory-debugging/SKILL.md
-**Change**: Create
-**Location Rationale**: Coherent 5-step workflow emerged. Too detailed for CLAUDE.md. No existing debugging skill. Creating new skill preserves workflow and makes it reusable.
-**Content**:
----
-name: memory-debugging
-description: Systematic workflow for diagnosing and fixing memory leaks
----
-[workflow content]
-```
-
-### Consolidation Opportunity
-
-> User: "Always use semantic commit messages"
-
-```markdown
-## Proposed: Consolidate Git Practices
-**Source**: User preference for semantic commits
-**Current State**:
-- CLAUDE.md has "don't commit unless asked"
-- rules/git.md has branch naming conventions
-- Scattered git guidance across 3 files
-**Target**: Consolidate into ~/.claude/skills/git-workflow/SKILL.md
-**Change**: Create (and clean up existing)
-**Location Rationale**: Git practices are scattered. New learning triggers consolidation into coherent skill. Will remove duplicates from CLAUDE.md and rules/git.md after creating skill.
-**Affected Files**:
-- CREATE: ~/.claude/skills/git-workflow/SKILL.md
-- MODIFY: ~/.claude/CLAUDE.md (remove git section)
-- DELETE: ~/.claude/rules/git.md (absorbed into skill)
-**Content**:
----
-name: git-workflow
-description: Git conventions and commit practices
----
-[consolidated content + new semantic commit guidance]
-```
+For detailed examples of proposals for different learning types (simple preferences, new rules, new skills, consolidation), read `references/examples.md`.

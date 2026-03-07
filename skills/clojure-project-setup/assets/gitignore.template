@@ -12,6 +12,8 @@
 .devbox/
 
 # Documentation (for library projects with codox)
+# NOTE: Library projects using GitHub Pages should REMOVE this line
+# and commit docs/api/ to version control
 docs/api/
 
 # OS

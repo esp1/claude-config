@@ -1,13 +1,13 @@
 ---
 name: clojure-project-setup
-description: This skill should be used when working with Clojure project structure and configuration. It provides conventions for organizing projects, configuration templates for deps.edn and bb.edn, and Malli schema integration patterns. Use when creating new Clojure projects, adapting existing projects to follow best practices, or setting up specific project types (libraries, web applications). Covers dependency management via deps.edn, task automation via Babashka, and schema validation via Malli.
+description: ALWAYS use when creating, scaffolding, or restructuring any Clojure project. Covers project initialization, deps.edn and bb.edn configuration, directory structure conventions, Malli schema integration, and devbox/direnv setup. Also use when adding or modifying deps.edn aliases, changing source paths, setting up Babashka tasks, or converting between project types (library vs application vs PWA).
 ---
 
 # Clojure Project Structure and Setup
 
 ## Overview
 
-This skill provides comprehensive guidance for structuring and configuring Clojure projects with modern tooling and best practices. It covers project organization, dependency management with deps.edn, task automation with Babashka (bb.edn), and Malli schema integration for validation and generative testing.
+Comprehensive guidance for structuring and configuring Clojure projects with modern tooling and best practices. Covers project organization, dependency management with deps.edn, task automation with Babashka (bb.edn), and Malli schema integration.
 
 Use this skill to:
 - Create new Clojure projects from scratch
@@ -15,15 +15,7 @@ Use this skill to:
 - Configure specific project types (libraries, web applications)
 - Understand and apply project structure best practices
 
-## When to Use This Skill
-
-Invoke this skill when:
-- Creating a new Clojure project from scratch
-- Adapting an existing project to follow these conventions
-- Setting up a library or web application structure
-- Configuring or reviewing deps.edn and bb.edn
-- Integrating Malli schemas into a project
-- Understanding project organization best practices
+**Devbox note:** For projects using devbox, prefix all shell commands with `devbox run --` (e.g., `devbox run -- bb test`, `devbox run -- clojure -M:dev`).
 
 ## Project Setup Workflow
 
@@ -140,7 +132,7 @@ Create the main namespace file with Malli schema metadata:
 
 (defn greet
   "Returns a greeting message."
-  {:malli/schema [:=> [:cat :string] :string]}
+  {:malli/schema [:=> [:catn [:name :string]] :string]}
   [name]
   (str "Hello, " name "!"))
 ```
@@ -171,7 +163,7 @@ For projects using Malli schemas:
 1. **Function schemas** - Add as `:malli/schema` metadata on each function:
    ```clojure
    (defn my-fn
-     {:malli/schema [:=> [:cat :string :int] :boolean]}
+     {:malli/schema [:=> [:catn [:s :string] [:n :int]] :boolean]}
      [s n]
      ...)
    ```
@@ -221,7 +213,7 @@ At minimum, create a basic README.md with:
 - Basic usage example
 - Development commands (`bb test`, etc.)
 
-### Step 9: Verify Setup and Make Initial Commit
+### Step 9: Verify Setup
 
 Run tests to verify everything is working:
 
@@ -229,17 +221,7 @@ Run tests to verify everything is working:
 bb test
 ```
 
-Then make your initial commit:
-
-```bash
-git add .
-git commit -m "Initial project setup
-
-- Standard deps.edn and bb.edn configuration
-- Basic project structure (src/, test/, docs/)
-- Core namespace with example function
-- Test setup with Malli integration"
-```
+Suggest an initial commit to the user if appropriate — do not commit automatically.
 
 ## Project Structure Reference
 
@@ -274,6 +256,15 @@ my-project/
 └── deps.edn (root)
 ```
 
+## Troubleshooting
+
+- **`bb: command not found`** — Install Babashka or ensure devbox is activated (`devbox shell` or `direnv allow`)
+- **`clojure: command not found`** — Install Clojure CLI or activate devbox
+- **Test runner not found** — Verify `:test` alias in `deps.edn` includes the test runner dependency and `main-opts`
+- **Namespace not found at classpath** — Ensure directory names use underscores for hyphenated namespaces (e.g., `my-app` → `my_app/`)
+- **Malli schema errors in tests** — Verify schemas are registered in the test fixture before `(mdev/start!)`
+- **Stale classpath after adding deps** — Run `clojure -P` to re-resolve dependencies, or restart the REPL
+
 ## Quick Start Checklist
 
 When creating a new Clojure project:
@@ -290,4 +281,4 @@ When creating a new Clojure project:
 - [ ] Add Malli schemas to functions (`:malli/schema` metadata)
 - [ ] Create basic README.md (or invoke `doc-sync` skill for comprehensive docs)
 - [ ] Run `bb test` to verify setup
-- [ ] Make initial commit
+- [ ] Suggest initial commit to the user

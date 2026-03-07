@@ -2,6 +2,7 @@
 ;; Validates Clojure file syntax after edits
 ;; Reads file path from stdin JSON (PostToolUse hook input)
 ;; Exit 0 = valid, Exit 2 = invalid (blocks with error message)
+;; Uses rewrite-clj to parse ALL forms in the file, not just the first
 
 (require '[cheshire.core :as json]
          '[clojure.java.io :as io])
@@ -10,7 +11,13 @@
       file-path (get-in input [:tool_input :file_path] "")]
   (when (re-matches #".*\.(clj|cljs|cljc|edn|bb|cljd)$" file-path)
     (try
-      (read-string (slurp file-path))
+      (let [content (slurp file-path)
+            reader (java.io.PushbackReader. (java.io.StringReader. content))]
+        ;; Read ALL forms in the file, not just the first
+        (loop []
+          (let [form (read {:eof ::eof} reader)]
+            (when-not (= form ::eof)
+              (recur)))))
       ;; Valid - exit silently
       (catch Exception e
         ;; Invalid - exit 2 with error to stderr

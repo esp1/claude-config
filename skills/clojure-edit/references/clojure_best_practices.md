@@ -166,15 +166,13 @@ Comprehensive reference for writing idiomatic, maintainable Clojure code.
       (error "Not authorized"))
     (error "Invalid")))
 
-;; Good - early returns
+;; Good - flat with cond
 (defn process [data]
-  (when-not (valid? data)
-    (error "Invalid"))
-  (when-not (authorized? data)
-    (error "Not authorized"))
-  (when-not (available? data)
-    (error "Not available"))
-  (execute data))
+  (cond
+    (not (valid? data))      (error "Invalid")
+    (not (authorized? data)) (error "Not authorized")
+    (not (available? data))  (error "Not available")
+    :else                    (execute data)))
 ```
 
 ### Return `nil` for "Not Found"
