@@ -52,7 +52,7 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
   fi
 fi
 
-model=$(echo "$input" | jq -r '.model.display_name')
+model=$(echo "$input" | jq -r '.model.display_name' | sed -E 's/Claude ([A-Za-z]+)/\1/' | sed -E 's/^([A-Z])[a-z]+ /\1 /')
 
 # Context window bar
 pct=$(echo "$input" | jq '.context_window.used_percentage // 0')
@@ -68,11 +68,11 @@ if [ -n "$pct" ]; then
   fi
 fi
 
-# Shorten path to last 2 components
-short_dir=$(echo "$rel_dir" | awk -F/ '{if(NF>2) print "…/"$(NF-1)"/"$NF; else print $0}')
+# Shorten path to last element
+short_dir=$(echo "$rel_dir" | awk -F/ '{print $NF}')
 
 format_statusline() {
-  printf '📁\033[36m%s\033[0m%s 🧠\033[35m%s\033[0m \033[%sm%s%%\033[0m' "$short_dir" "$branch" "$model" "$color" "$pct"
+  printf '📁\033[36m%s\033[0m%s \033[%sm%s%%\033[0m 🧠\033[35m%s\033[0m' "$short_dir" "$branch" "$color" "$pct" "$model"
 }
 
 format_statusline
