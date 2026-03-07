@@ -58,11 +58,6 @@ model=$(echo "$input" | jq -r '.model.display_name')
 pct=$(echo "$input" | jq '.context_window.used_percentage // 0')
 if [ -n "$pct" ]; then
   pct=${pct%.*}
-  filled=$((pct / 5))
-  empty=$((20 - filled))
-  bar=""
-  for ((i=0; i<filled; i++)); do bar+="█"; done
-  for ((i=0; i<empty; i++)); do bar+="░"; done
   # Color based on usage percentage
   if [ "$pct" -ge 80 ]; then
     color='31'  # red
@@ -73,8 +68,11 @@ if [ -n "$pct" ]; then
   fi
 fi
 
+# Shorten path to last 2 components
+short_dir=$(echo "$rel_dir" | awk -F/ '{if(NF>2) print "…/"$(NF-1)"/"$NF; else print $0}')
+
 format_statusline() {
-  printf '📁\033[36m%s\033[0m \033[34m%s\033[0m  🧠\033[35m%s\033[0m  \033[%sm%s\033[0m' "$rel_dir" "$branch" "$model" "$color" "$bar"
+  printf '📁\033[36m%s\033[0m%s  🧠\033[35m%s\033[0m  \033[%sm%s%%\033[0m' "$short_dir" "$branch" "$model" "$color" "$pct"
 }
 
 format_statusline
