@@ -60,11 +60,11 @@ if [ -n "$pct" ]; then
   pct=${pct%.*}
   # Color based on usage percentage
   if [ "$pct" -ge 80 ]; then
-    color='31'  # red
+    pct_color='31'  # red
   elif [ "$pct" -ge 60 ]; then
-    color='33'  # yellow
+    pct_color='33'  # yellow
   else
-    color='32'  # green
+    pct_color='32'  # green
   fi
 fi
 
@@ -72,7 +72,7 @@ fi
 short_dir=$(echo "$rel_dir" | awk -F/ '{print $NF}')
 
 format_statusline() {
-  printf '📁\033[36m%s\033[0m%s \033[%sm%s%%\033[0m 🧠\033[35m%s\033[0m' "$short_dir" "$branch" "$color" "$pct" "$model"
+  printf '📁\033[36m%s\033[0m%s 🧠\033[35m%s\033[0m \033[%sm%s%%\033[0m' "$short_dir" "$branch" "$model" "$pct_color" "$pct"
 }
 
 format_statusline
