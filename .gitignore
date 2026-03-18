@@ -1,5 +1,2 @@
 # Eval workspaces (generated outputs, timing, grading)
 **/evals/workspace/
-
-# Legacy eval workspace
-doc-sync-workspace/
