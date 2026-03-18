@@ -66,4 +66,29 @@ fi
 # --- Run setup ---
 
 echo ""
-exec "$REPO_DIR/bin/install-tools.sh"
+"$REPO_DIR/bin/install-tools.sh"
+
+# --- Persist Anthropic API key ---
+
+# Determine shell RC file
+if [ -n "${ZSH_VERSION:-}" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
+  SHELL_RC="$HOME/.zshrc"
+else
+  SHELL_RC="$HOME/.bashrc"
+fi
+
+if ! grep -q ANTHROPIC_API_KEY "$SHELL_RC" 2>/dev/null; then
+  echo ""
+  read -rp "Enter your Anthropic API key (or press Enter to skip): " api_key
+  if [ -n "$api_key" ]; then
+    echo "export ANTHROPIC_API_KEY='$api_key'" >> "$SHELL_RC"
+    echo "OK    API key saved to $SHELL_RC"
+  else
+    echo "SKIP  API key (set ANTHROPIC_API_KEY later)"
+  fi
+fi
+
+# --- Done ---
+
+echo ""
+echo "Done! Run 'source $SHELL_RC' (or start a new shell), then run 'claude'."

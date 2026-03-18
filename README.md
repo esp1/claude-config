@@ -23,13 +23,19 @@ The statusline script requires `jq`. The setup script handles this automatically
 
 ## Bootstrap (fresh machine)
 
-Copy `bin/bootstrap.sh` to the new machine and run it:
+One-liner for a bare node (e.g. Hetzner):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/esp1/dot.claude/main/bin/bootstrap.sh | bash
+```
+
+Or copy `bin/bootstrap.sh` to the new machine and run it:
 
 ```bash
 bash bootstrap.sh
 ```
 
-This will install git and curl (if needed), write `~/.gitconfig`, clone the repo (git will prompt for credentials), and run `bin/install-tools.sh`. Override the clone location with `REPO_DIR`:
+This will install git and curl (if needed), write `~/.gitconfig`, clone the repo (git will prompt for credentials), run `bin/install-tools.sh`, and prompt for your Anthropic API key (persisted to your shell RC file). Override the clone location with `REPO_DIR`:
 
 ```bash
 REPO_DIR=~/my/path bash bootstrap.sh
