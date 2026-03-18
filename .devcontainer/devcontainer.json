@@ -1,0 +1,13 @@
+{
+  "name": "Claude Code",
+  "build": { "dockerfile": "Dockerfile" },
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/opt/dot.claude,type=bind,readonly"
+  ],
+  "workspaceFolder": "/home/vscode/workspace",
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}"
+  },
+  "postCreateCommand": "bash /opt/dot.claude/.devcontainer/post-create.sh",
+  "remoteUser": "vscode"
+}

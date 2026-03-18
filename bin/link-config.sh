@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Resolve the directory this script lives in (the repo root)
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Symlink dot.claude/ config into ~/.claude/
+# Sourced by bin/setup.sh (bare metal) and .devcontainer/post-create.sh (container).
+# Expects REPO_ROOT to be set by the caller.
+
+: "${REPO_ROOT:?REPO_ROOT must be set}"
+REPO_DIR="$REPO_ROOT/dot.claude"
 TARGET_DIR="$HOME/.claude"
 
-# Files and directories to symlink into ~/.claude
 MANAGED_ITEMS=(
   CLAUDE.md
   settings.json
