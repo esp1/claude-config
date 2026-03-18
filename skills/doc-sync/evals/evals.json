@@ -1,0 +1,26 @@
+{
+  "skill_name": "doc-sync",
+  "evals": [
+    {
+      "id": 0,
+      "name": "bootstrap-docs",
+      "prompt": "I just created a new Clojure web API project with user authentication and a PostgreSQL database. There's no documentation yet beyond a bare README. Can you set up the initial project documentation?",
+      "expected_output": "Creates docs/ directory with proper hierarchy: docs/index.md, docs/functional/index.md with feature specs, docs/technical/index.md with architecture and dev setup. README stays minimal with link to docs/index.md.",
+      "fixtures": "fixtures/bootstrap-docs/"
+    },
+    {
+      "id": 1,
+      "name": "reorganize-docs",
+      "prompt": "Our NoteSync project docs have grown organically — everything's dumped into flat files under docs/ and the README has become a catch-all. Can you reorganize the documentation into a proper structure? The README should be minimal, and we need a clear separation between what features do and how they're implemented.",
+      "expected_output": "Reorganizes flat docs into docs/functional/ and docs/technical/ with category indexes. README trimmed to under 15 lines. No code in functional specs. No duplication between README and docs/index.md.",
+      "fixtures": "fixtures/reorganize-docs/"
+    },
+    {
+      "id": 2,
+      "name": "audit-fix-docs",
+      "prompt": "Can you review our ShopAPI documentation and fix any issues? I feel like there's a lot of repetition and some things seem out of place.",
+      "expected_output": "Identifies and fixes: (1) Quick start duplicated in README and docs/index.md, (2) API endpoints listed in both README and docs/index.md, (3) Feature descriptions duplicated across README, docs/index.md, and functional/index.md, (4) Implementation details in functional specs (product-catalog.md SQL trigger, order-processing.md core.async code), (5) Order pipeline content duplicated between functional/order-processing.md and technical/order-pipeline.md, (6) docs/index.md links directly to leaf docs instead of through category indexes, (7) Tech stack duplicated in README and architecture.md. Makes README minimal, consolidates content to single locations.",
+      "fixtures": "fixtures/audit-fix-docs/"
+    }
+  ]
+}

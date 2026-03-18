@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "skill_name": "doc-sync",
+    "timestamp": "2026-03-16T22:22:00Z",
+    "evals_run": ["bootstrap-docs", "update-after-feature", "audit-fix-docs"],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_name": "bootstrap-docs",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "duration_seconds": 117.8,
+      "total_tokens": 25053,
+      "expectations": [
+        {"text": "docs/index.md exists", "passed": true, "evidence": "File found"},
+        {"text": "docs/functional/index.md exists", "passed": true, "evidence": "File found"},
+        {"text": "docs/technical/index.md exists", "passed": true, "evidence": "File found"},
+        {"text": "README.md links to docs/index.md", "passed": true, "evidence": "Link found in README"},
+        {"text": "README.md is under 10 lines", "passed": true, "evidence": "README has 5 lines"},
+        {"text": "functional/ has at least one feature spec", "passed": true, "evidence": "Found 2 feature spec(s)"},
+        {"text": "Functional specs have no implementation details", "passed": true, "evidence": "No code blocks or SQL found"}
+      ]
+    },
+    {
+      "eval_name": "bootstrap-docs",
+      "configuration": "without_skill",
+      "pass_rate": 0.857,
+      "passed": 6,
+      "total": 7,
+      "duration_seconds": 195.6,
+      "total_tokens": 24976,
+      "expectations": [
+        {"text": "docs/index.md exists", "passed": true, "evidence": "File found"},
+        {"text": "docs/functional/index.md exists", "passed": true, "evidence": "File found"},
+        {"text": "docs/technical/index.md exists", "passed": true, "evidence": "File found"},
+        {"text": "README.md links to docs/index.md", "passed": true, "evidence": "Link found in README"},
+        {"text": "README.md is under 10 lines", "passed": false, "evidence": "README has 24 lines"},
+        {"text": "functional/ has at least one feature spec", "passed": true, "evidence": "Found 2 feature spec(s)"},
+        {"text": "Functional specs have no implementation details", "passed": true, "evidence": "No code blocks or SQL found"}
+      ]
+    },
+    {
+      "eval_name": "update-after-feature",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 6,
+      "total": 6,
+      "duration_seconds": 188.0,
+      "total_tokens": 25968,
+      "expectations": [
+        {"text": "New functional spec for notifications exists", "passed": true, "evidence": "Found notification/websocket spec in functional/"},
+        {"text": "functional/index.md links to new spec", "passed": true, "evidence": "Reference found in functional index"},
+        {"text": "Technical doc covers WebSocket implementation", "passed": true, "evidence": "WebSocket content found in technical docs"},
+        {"text": "technical/index.md links to WebSocket doc", "passed": true, "evidence": "Reference found in technical index"},
+        {"text": "Functional spec has no code snippets", "passed": true, "evidence": "No code blocks in notification functional spec"},
+        {"text": "No content duplicated between functional and technical", "passed": true, "evidence": "Manual review needed for full verification"}
+      ]
+    },
+    {
+      "eval_name": "update-after-feature",
+      "configuration": "without_skill",
+      "pass_rate": 1.0,
+      "passed": 6,
+      "total": 6,
+      "duration_seconds": 82.0,
+      "total_tokens": 15568,
+      "expectations": [
+        {"text": "New functional spec for notifications exists", "passed": true, "evidence": "Found notification/websocket spec in functional/"},
+        {"text": "functional/index.md links to new spec", "passed": true, "evidence": "Reference found in functional index"},
+        {"text": "Technical doc covers WebSocket implementation", "passed": true, "evidence": "WebSocket content found in technical docs"},
+        {"text": "technical/index.md links to WebSocket doc", "passed": true, "evidence": "Reference found in technical index"},
+        {"text": "Functional spec has no code snippets", "passed": true, "evidence": "No code blocks in notification functional spec"},
+        {"text": "No content duplicated between functional and technical", "passed": true, "evidence": "Manual review needed for full verification"}
+      ]
+    },
+    {
+      "eval_name": "audit-fix-docs",
+      "configuration": "with_skill",
+      "pass_rate": 0.857,
+      "passed": 6,
+      "total": 7,
+      "duration_seconds": 187.6,
+      "total_tokens": 30918,
+      "expectations": [
+        {"text": "Quick start in only one place", "passed": true, "evidence": "Found setup commands in 1 locations"},
+        {"text": "API endpoints in at most one place", "passed": true, "evidence": "Endpoints found in 0 top-level locations"},
+        {"text": "README.md under 10 lines", "passed": true, "evidence": "README has 5 lines"},
+        {"text": "product-catalog.md has no SQL code", "passed": true, "evidence": "No SQL found"},
+        {"text": "order-processing.md has no Clojure code", "passed": true, "evidence": "No Clojure code found"},
+        {"text": "docs/index.md links to category indexes not leaf docs", "passed": false, "evidence": "Direct links to leaf docs found in index.md"},
+        {"text": "Tech stack not duplicated", "passed": true, "evidence": "Stack info in 1 location(s)"}
+      ]
+    },
+    {
+      "eval_name": "audit-fix-docs",
+      "configuration": "without_skill",
+      "pass_rate": 0.714,
+      "passed": 5,
+      "total": 7,
+      "duration_seconds": 148.7,
+      "total_tokens": 22589,
+      "expectations": [
+        {"text": "Quick start in only one place", "passed": true, "evidence": "Found setup commands in 1 locations"},
+        {"text": "API endpoints in at most one place", "passed": true, "evidence": "Endpoints found in 1 top-level locations"},
+        {"text": "README.md under 10 lines", "passed": false, "evidence": "README has 43 lines"},
+        {"text": "product-catalog.md has no SQL code", "passed": true, "evidence": "No SQL found"},
+        {"text": "order-processing.md has no Clojure code", "passed": true, "evidence": "No Clojure code found"},
+        {"text": "docs/index.md links to category indexes not leaf docs", "passed": false, "evidence": "Direct links to leaf docs found in index.md"},
+        {"text": "Tech stack not duplicated", "passed": true, "evidence": "Stack info in 1 location(s)"}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 0.952,
+      "stddev_pass_rate": 0.083,
+      "mean_duration_seconds": 164.5,
+      "mean_tokens": 27313
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.857,
+      "stddev_pass_rate": 0.143,
+      "mean_duration_seconds": 142.1,
+      "mean_tokens": 21044
+    },
+    "delta": {
+      "pass_rate": "+0.095 (95.2% vs 85.7%)",
+      "time_seconds": "+22.4s (skill is slower)",
+      "tokens": "+6269 (skill uses more tokens)"
+    }
+  },
+  "notes": [
+    "The 'docs/index.md links to category indexes not leaf docs' assertion failed for BOTH with_skill and without_skill in the audit test — this is a non-discriminating failure, suggesting the skill needs stronger guidance on this point.",
+    "The 'README under 10 lines' assertion reliably discriminates: with_skill always passes, without_skill always fails — the skill's emphasis on minimal READMEs is working.",
+    "Test 2 (update-after-feature) shows no differentiation — both pass all assertions. This makes sense as the task is straightforward and Claude handles it well without guidance.",
+    "The skill costs ~30% more tokens and ~16% more time, which is the expected overhead of reading and following the skill instructions."
+  ]
+}

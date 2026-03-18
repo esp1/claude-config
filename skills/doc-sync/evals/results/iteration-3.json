@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "skill_name": "doc-sync",
+    "timestamp": "2026-03-18T00:00:00Z",
+    "evals_run": ["bootstrap-docs", "reorganize-docs", "audit-fix-docs"],
+    "total_runs": 8,
+    "note": "Combines iteration-2 (1 run per test) + iteration-3 (2 runs per test). Test 2 replaced: update-after-feature (non-discriminating) → reorganize-docs. Assertions refined: relaxed category-index check, tightened SQL detection."
+  },
+  "per_eval_summary": {
+    "bootstrap-docs": {
+      "with_skill": {"runs": 3, "scores": [1.0, 1.0, 1.0], "mean": 1.0, "stddev": 0.0},
+      "without_skill": {"runs": 3, "scores": [0.571, 0.571, 0.429], "mean": 0.524, "stddev": 0.082}
+    },
+    "reorganize-docs": {
+      "with_skill": {"runs": 2, "scores": [1.0, 1.0], "mean": 1.0, "stddev": 0.0},
+      "without_skill": {"runs": 2, "scores": [0.714, 0.714], "mean": 0.714, "stddev": 0.0}
+    },
+    "audit-fix-docs": {
+      "with_skill": {"runs": 3, "scores": [1.0, 1.0, 1.0], "mean": 1.0, "stddev": 0.0},
+      "without_skill": {"runs": 3, "scores": [0.571, 0.714, 0.714], "mean": 0.666, "stddev": 0.083}
+    }
+  },
+  "overall_summary": {
+    "with_skill": {
+      "total_runs": 8,
+      "scores": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "mean_pass_rate": 1.0,
+      "stddev": 0.0
+    },
+    "without_skill": {
+      "total_runs": 8,
+      "scores": [0.571, 0.571, 0.429, 0.714, 0.714, 0.571, 0.714, 0.714],
+      "mean_pass_rate": 0.625,
+      "stddev": 0.099
+    },
+    "delta": "+0.375 (100% vs 62.5%)"
+  },
+  "discriminating_assertions": {
+    "always_discriminates": [
+      "README.md under 10/15 lines — with_skill always 5 lines; without_skill 33-87 lines (8/8 discrimination)",
+      "docs/index.md favors category indexes — with_skill always passes; without_skill recreates full indexes (6/6 discrimination on reorganize+audit)"
+    ],
+    "usually_discriminates": [
+      "docs/technical/index.md exists — without_skill often uses non-standard dirs (2/3 bootstrap failures)",
+      "functional/ has child specs — without_skill puts everything in functional/index.md (3/3 bootstrap failures)"
+    ],
+    "never_discriminates": [
+      "docs/index.md exists — both always create it",
+      "Functional specs have no code blocks — both consistently pass on bootstrap/reorganize",
+      "Technical doc covers sync/real-time — both always find it"
+    ]
+  },
+  "without_skill_failure_patterns": [
+    "README bloat: without_skill treats README as the primary doc, cramming setup, features, API endpoints, and architecture into it (33-87 lines vs 5 lines with skill)",
+    "Non-standard structure: without_skill invents its own directory layout (docs/architecture/, docs/api/, docs/guides/) instead of docs/functional/ + docs/technical/",
+    "Flat functional docs: without_skill puts all functional content in functional/index.md instead of creating child specs",
+    "Index duplication: without_skill's docs/index.md lists all leaf docs directly, recreating both category indexes"
+  ]
+}

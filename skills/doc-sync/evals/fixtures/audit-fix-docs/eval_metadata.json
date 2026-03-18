@@ -1,0 +1,14 @@
+{
+  "eval_id": 2,
+  "eval_name": "audit-fix-docs",
+  "prompt": "Can you review our ShopAPI documentation and fix any issues? I feel like there's a lot of repetition and some things seem out of place.",
+  "assertions": [
+    {"text": "Quick start / setup instructions appear in only one place (not in both README and docs/index.md)", "type": "content_uniqueness"},
+    {"text": "API endpoints listed in at most one place (not in both README and docs/index.md)", "type": "content_uniqueness"},
+    {"text": "README.md is under 10 lines (minimal with link to docs)", "type": "line_count"},
+    {"text": "docs/functional/product-catalog.md contains no SQL code", "type": "content_absence"},
+    {"text": "docs/functional/order-processing.md contains no Clojure code blocks", "type": "content_absence"},
+    {"text": "docs/index.md links to category indexes (functional/index.md, technical/index.md) not directly to leaf docs", "type": "content_check"},
+    {"text": "Tech stack info is not duplicated between README and docs/technical/architecture.md", "type": "content_uniqueness"}
+  ]
+}

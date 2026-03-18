@@ -1,0 +1,14 @@
+{
+  "eval_id": 0,
+  "eval_name": "bootstrap-docs",
+  "prompt": "I just created a new Clojure web API project with user authentication and a PostgreSQL database. There's no documentation yet beyond a bare README. Can you set up the initial project documentation?",
+  "assertions": [
+    {"text": "docs/index.md exists", "type": "file_exists"},
+    {"text": "docs/functional/index.md exists", "type": "file_exists"},
+    {"text": "docs/technical/index.md exists", "type": "file_exists"},
+    {"text": "README.md links to docs/index.md", "type": "content_check"},
+    {"text": "README.md is under 10 lines", "type": "line_count"},
+    {"text": "docs/functional/ has at least one feature spec beyond index.md", "type": "file_count"},
+    {"text": "Functional specs contain no implementation details (no code blocks, no SQL, no function signatures)", "type": "content_absence"}
+  ]
+}

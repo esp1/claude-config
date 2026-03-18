@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "eval_name": "reorganize-docs",
+  "prompt": "Our NoteSync project docs have grown organically — everything's dumped into flat files under docs/ and the README has become a catch-all. Can you reorganize the documentation into a proper structure? The README should be minimal, and we need a clear separation between what features do and how they're implemented.",
+  "assertions": [
+    {"text": "docs/functional/index.md exists with links to feature specs", "type": "file_exists"},
+    {"text": "docs/technical/index.md exists with links to technical docs", "type": "file_exists"},
+    {"text": "README.md is under 15 lines (minimal with link to docs)", "type": "line_count"},
+    {"text": "Functional specs contain no code blocks (SQL, Clojure, or Dockerfile)", "type": "content_absence"},
+    {"text": "Technical docs exist for sync/real-time architecture", "type": "content_check"},
+    {"text": "No content duplicated between README and docs/index.md", "type": "content_uniqueness"},
+    {"text": "docs/index.md favors category indexes over leaf docs", "type": "content_check"}
+  ]
+}
