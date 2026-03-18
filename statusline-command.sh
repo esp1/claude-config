@@ -52,7 +52,7 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
   fi
 fi
 
-model=$(echo "$input" | jq -r '.model.display_name' | sed -E 's/Claude ([A-Za-z]+)/\1/' | sed -E 's/^([A-Z])[a-z]+ /\1 /')
+model=$(echo "$input" | jq -r '.model.display_name' | sed -E 's/Claude ([A-Za-z]+)/\1/' | sed -E 's/^([A-Z])[a-z]+ /\1 /' | sed -E 's/\((.+) context\)/(\1)/')
 
 # Context window bar
 pct=$(echo "$input" | jq '.context_window.used_percentage // 0')
