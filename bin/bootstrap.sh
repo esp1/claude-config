@@ -66,4 +66,4 @@ fi
 # --- Run setup ---
 
 echo ""
-exec "$REPO_DIR/bin/setup.sh"
+exec "$REPO_DIR/bin/install-tools.sh"

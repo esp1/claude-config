@@ -29,7 +29,7 @@ Copy `bin/bootstrap.sh` to the new machine and run it:
 bash bootstrap.sh
 ```
 
-This will install git and curl (if needed), write `~/.gitconfig`, clone the repo (git will prompt for credentials), and run `bin/setup.sh`. Override the clone location with `REPO_DIR`:
+This will install git and curl (if needed), write `~/.gitconfig`, clone the repo (git will prompt for credentials), and run `bin/install-tools.sh`. Override the clone location with `REPO_DIR`:
 
 ```bash
 REPO_DIR=~/my/path bash bootstrap.sh
@@ -41,7 +41,7 @@ If the repo is already cloned, run the setup script directly:
 
 ```bash
 cd ~/Projects/AI/dot.claude
-./bin/setup.sh
+./bin/install-tools.sh
 ```
 
 The script will:

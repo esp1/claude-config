@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Install tools (devbox, Node.js, Claude Code) and symlink config into ~/.claude/.
+# For bare-metal setup on macOS or Linux. See also devcontainer.sh for container usage.
+
 # Resolve the repo root (one level up from bin/)
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 

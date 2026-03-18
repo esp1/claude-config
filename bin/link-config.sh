@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Symlink dot.claude/ config into ~/.claude/
-# Sourced by bin/setup.sh (bare metal) and .devcontainer/post-create.sh (container).
+# Sourced by bin/install-tools.sh (bare metal) and .devcontainer/post-create.sh (container).
 # Expects REPO_ROOT to be set by the caller.
 
 : "${REPO_ROOT:?REPO_ROOT must be set}"
