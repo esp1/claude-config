@@ -60,7 +60,7 @@ else
   echo "Cloning dot.claude into $REPO_DIR..."
   echo "Git will prompt for your GitHub credentials if needed."
   mkdir -p "$(dirname "$REPO_DIR")"
-  git clone https://github.com/esp1/dot.claude.git "$REPO_DIR"
+  git clone https://github.com/esp1/claude-config.git "$REPO_DIR"
 fi
 
 # --- Run setup ---

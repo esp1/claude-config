@@ -26,7 +26,7 @@ The statusline script requires `jq`. The setup script handles this automatically
 One-liner for a bare node (e.g. Hetzner):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/esp1/dot.claude/main/bin/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/esp1/claude-config/main/bin/bootstrap.sh | bash
 ```
 
 Or copy `bin/bootstrap.sh` to the new machine and run it:
