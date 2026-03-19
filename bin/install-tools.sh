@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install tools (devbox, Node.js, Claude Code) and symlink config into ~/.claude/.
+# Install tools (devbox, Claude Code) and symlink config into ~/.claude/.
 # For bare-metal setup on macOS or Linux. See also devcontainer.sh for container usage.
 
 # Resolve the repo root (one level up from bin/)
@@ -28,7 +28,7 @@ fi
 
 # Install tool dependencies globally via devbox
 echo "Installing global tool dependencies via devbox..."
-devbox global add jq nodejs
+devbox global add jq
 eval "$(devbox global shellenv --preserve-path-stack -r)"
 hash -r
 
@@ -43,25 +43,10 @@ if ! grep -q 'devbox global shellenv' "$_SHELL_RC" 2>/dev/null; then
   echo "OK    devbox shellenv added to $_SHELL_RC"
 fi
 
-# Set user-writable npm global prefix (devbox's nix store is read-only)
-export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-mkdir -p "$NPM_CONFIG_PREFIX/bin"
-if [[ ":$PATH:" != *":$NPM_CONFIG_PREFIX/bin:"* ]]; then
-  export PATH="$NPM_CONFIG_PREFIX/bin:$PATH"
-fi
-
-# Persist npm prefix in shell RC
-if ! grep -q 'NPM_CONFIG_PREFIX' "$_SHELL_RC" 2>/dev/null; then
-  cat >> "$_SHELL_RC" << 'NPMRC'
-export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-export PATH="$NPM_CONFIG_PREFIX/bin:$PATH"
-NPMRC
-fi
-
 # Install Claude Code
 if ! command -v claude &>/dev/null; then
   echo "Installing Claude Code..."
-  npm install -g @anthropic-ai/claude-code
+  curl -fsSL https://claude.ai/install.sh | bash
 else
   echo "OK    claude already installed ($(claude --version))"
 fi
