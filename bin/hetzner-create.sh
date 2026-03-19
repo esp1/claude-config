@@ -120,6 +120,13 @@ touch "$SSH_CONFIG"
 chmod 600 "$SSH_CONFIG"
 
 if grep -q "^Host $SERVER_NAME\$" "$SSH_CONFIG"; then
+  # Remove stale known_hosts entries for the old IP
+  OLD_IP=$(sed -n "/^Host $SERVER_NAME\$/,/^Host /{ s/^  HostName //p; }" "$SSH_CONFIG")
+  if [ -n "$OLD_IP" ] && [ "$OLD_IP" != "$IP" ]; then
+    ssh-keygen -R "$OLD_IP" 2>/dev/null || true
+    ssh-keygen -R "$SERVER_NAME" 2>/dev/null || true
+    echo "Removed old known_hosts entries for $OLD_IP / $SERVER_NAME"
+  fi
   # Update existing entry's HostName
   sed -i.bak "/^Host $SERVER_NAME\$/,/^Host / s/^  HostName .*/  HostName $IP/" "$SSH_CONFIG"
   rm -f "$SSH_CONFIG.bak"
