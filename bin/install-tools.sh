@@ -29,6 +29,18 @@ fi
 # Install tool dependencies globally via devbox
 echo "Installing global tool dependencies via devbox..."
 devbox global add jq nodejs
+eval "$(devbox global shellenv)"
+
+# Persist devbox shellenv in shell RC
+if [ -n "${ZSH_VERSION:-}" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
+  _SHELL_RC="$HOME/.zshrc"
+else
+  _SHELL_RC="$HOME/.bashrc"
+fi
+if ! grep -q 'devbox global shellenv' "$_SHELL_RC" 2>/dev/null; then
+  echo 'eval "$(devbox global shellenv)"' >> "$_SHELL_RC"
+  echo "OK    devbox shellenv added to $_SHELL_RC"
+fi
 
 # Install Claude Code
 if ! command -v claude &>/dev/null; then
