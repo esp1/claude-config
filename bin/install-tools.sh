@@ -43,6 +43,14 @@ if ! grep -q 'devbox global shellenv' "$_SHELL_RC" 2>/dev/null; then
   echo "OK    devbox shellenv added to $_SHELL_RC"
 fi
 
+# Ensure ~/.local/bin is on PATH (Claude Code native installer location)
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+if ! grep -q '\.local/bin' "$_SHELL_RC" 2>/dev/null; then
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$_SHELL_RC"
+fi
+
 # Install Claude Code
 if ! command -v claude &>/dev/null; then
   echo "Installing Claude Code..."
