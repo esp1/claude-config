@@ -93,6 +93,24 @@ CLOUDINIT
 # --- Wait for server to be running ---
 
 IP=$(hcloud server ip "$SERVER_NAME")
+
+# --- Upsert SSH config entry ---
+
+SSH_CONFIG="$HOME/.ssh/config"
+touch "$SSH_CONFIG"
+chmod 600 "$SSH_CONFIG"
+
+if grep -q "^Host $SERVER_NAME\$" "$SSH_CONFIG"; then
+  # Update existing entry's HostName
+  sed -i.bak "/^Host $SERVER_NAME\$/,/^Host / s/^  HostName .*/  HostName $IP/" "$SSH_CONFIG"
+  rm -f "$SSH_CONFIG.bak"
+  echo "Updated SSH config entry for $SERVER_NAME → $IP"
+else
+  # Append new entry
+  printf '\nHost %s\n  HostName %s\n  User dev\n' "$SERVER_NAME" "$IP" >> "$SSH_CONFIG"
+  echo "Added SSH config entry for $SERVER_NAME → $IP"
+fi
+
 echo ""
 echo "Server created!"
 echo "  Name:  $SERVER_NAME"
@@ -101,9 +119,9 @@ echo "  User:  dev"
 echo ""
 echo "Cloud-init is bootstrapping in the background (installs devbox, Node.js, Claude Code)."
 echo "You can monitor progress with:"
-echo "  ssh root@$IP tail -f /var/log/cloud-init-output.log"
+echo "  ssh $SERVER_NAME -l root tail -f /var/log/cloud-init-output.log"
 echo ""
 echo "Once ready, connect and set your API key:"
-echo "  ssh dev@$IP"
+echo "  ssh $SERVER_NAME"
 echo "  export ANTHROPIC_API_KEY='sk-ant-...'"
 echo "  claude"
