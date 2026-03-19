@@ -10,19 +10,22 @@ set -euo pipefail
 #
 # Usage:
 #   ./hetzner-create.sh                          # uses defaults
-#   SERVER_NAME=my-dev SERVER_TYPE=cx32 ./hetzner-create.sh
+#   SERVER_NAME=my-dev SERVER_TYPE=cx32 LOCATIONS="ash hil" ./hetzner-create.sh
 #
 # Environment variables:
 #   SERVER_NAME   Name for the server          (default: claude-dev)
 #   SERVER_TYPE   Hetzner server type          (default: cax11)
 #   IMAGE         OS image                     (default: ubuntu-24.04)
-#   LOCATION      Datacenter location          (default: nbg1)
+#   LOCATIONS     Datacenter locations to try   (default: "nbg1 fsn1 hel1 ash hil")
 #   SSH_KEY       Name of SSH key in Hetzner   (auto-detected if only one exists)
 
 SERVER_NAME="${SERVER_NAME:-claude-dev}"
 SERVER_TYPE="${SERVER_TYPE:-cax11}"
 IMAGE="${IMAGE:-ubuntu-24.04}"
-LOCATION="${LOCATION:-nbg1}"
+if [ -z "${LOCATIONS:-}" ]; then
+  LOCATIONS="nbg1 fsn1 hel1 ash hil"
+fi
+read -ra LOCATIONS <<< "$LOCATIONS"
 
 # --- Install hcloud via devbox ---
 
@@ -59,16 +62,9 @@ if [ -z "${SSH_KEY:-}" ]; then
   fi
 fi
 
-# --- Create server ---
+# --- Create server (with location fallback) ---
 
-echo "Creating server '$SERVER_NAME' ($SERVER_TYPE, $IMAGE, $LOCATION)..."
-hcloud server create \
-  --name "$SERVER_NAME" \
-  --type "$SERVER_TYPE" \
-  --image "$IMAGE" \
-  --location "$LOCATION" \
-  --ssh-key "$SSH_KEY" \
-  --user-data-from-file <(cat <<'CLOUDINIT'
+CLOUD_INIT=$(cat <<'CLOUDINIT'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -89,6 +85,29 @@ chmod 600 /home/dev/.ssh/authorized_keys
 su - dev -c 'curl -fsSL https://raw.githubusercontent.com/esp1/claude-config/main/bin/bootstrap.sh | bash'
 CLOUDINIT
 )
+
+CREATED=false
+for loc in "${LOCATIONS[@]}"; do
+  echo "Creating server '$SERVER_NAME' ($SERVER_TYPE, $IMAGE, $loc)..."
+  if hcloud server create \
+    --name "$SERVER_NAME" \
+    --type "$SERVER_TYPE" \
+    --image "$IMAGE" \
+    --location "$loc" \
+    --ssh-key "$SSH_KEY" \
+    --user-data-from-file <(echo "$CLOUD_INIT") 2>&1; then
+    CREATED_LOCATION="$loc"
+    CREATED=true
+    break
+  else
+    echo "Location $loc unavailable, trying next..."
+  fi
+done
+
+if [ "$CREATED" = false ]; then
+  echo "ERROR: Could not create server in any location (${LOCATIONS[*]})." >&2
+  exit 1
+fi
 
 # --- Wait for server to be running ---
 
