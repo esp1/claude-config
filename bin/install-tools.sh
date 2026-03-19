@@ -29,7 +29,8 @@ fi
 # Install tool dependencies globally via devbox
 echo "Installing global tool dependencies via devbox..."
 devbox global add jq nodejs
-eval "$(devbox global shellenv)"
+eval "$(devbox global shellenv --preserve-path-stack -r)"
+hash -r
 
 # Persist devbox shellenv in shell RC
 if [ -n "${ZSH_VERSION:-}" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
@@ -38,7 +39,7 @@ else
   _SHELL_RC="$HOME/.bashrc"
 fi
 if ! grep -q 'devbox global shellenv' "$_SHELL_RC" 2>/dev/null; then
-  echo 'eval "$(devbox global shellenv)"' >> "$_SHELL_RC"
+  echo 'eval "$(devbox global shellenv --preserve-path-stack -r)" && hash -r' >> "$_SHELL_RC"
   echo "OK    devbox shellenv added to $_SHELL_RC"
 fi
 

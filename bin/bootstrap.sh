@@ -7,9 +7,9 @@ set -euo pipefail
 #   bash bootstrap.sh
 #   REPO_DIR=~/custom/path bash bootstrap.sh
 #
-# REPO_DIR: Where to clone the repo (default: ~/Projects/AI/dot.claude)
+# REPO_DIR: Where to clone the repo (default: ~/Projects/AI/claude-config)
 
-REPO_DIR="${REPO_DIR:-$HOME/Projects/AI/dot.claude}"
+REPO_DIR="${REPO_DIR:-$HOME/Projects/AI/claude-config}"
 
 # --- Install prerequisites ---
 
@@ -57,7 +57,7 @@ if [ -d "$REPO_DIR/.git" ]; then
   echo "SKIP  repo already cloned at $REPO_DIR"
 else
   echo ""
-  echo "Cloning dot.claude into $REPO_DIR..."
+  echo "Cloning claude-config into $REPO_DIR..."
   echo "Git will prompt for your GitHub credentials if needed."
   mkdir -p "$(dirname "$REPO_DIR")"
   git clone https://github.com/esp1/claude-config.git "$REPO_DIR"
